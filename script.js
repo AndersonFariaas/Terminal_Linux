@@ -225,6 +225,7 @@ const dom = {
     setup: $('#setup'),
     setupForm: $('#setupForm'),
     setupError: $('#setupError'),
+    panelBtn: $('#panelBtn'),
 };
 
 /* ---------- Etapas da missão ---------- */
@@ -235,6 +236,7 @@ const STAGES = [
         name: 'Reconhecimento',
         objective: 'Explore sua home e leia o arquivo de plantão em documentos.',
         hint: 'Use pwd e ls para ver onde você está. Entre em documentos (cd documentos) e leia plantao.txt com cat.',
+        lesson: 'Todo incidente começa por contexto. pwd mostra onde você está e ls mostra o que há ali.',
         flag: 'FLAG{PRIMEIRO_PASSO}',
         isComplete: () => state.visited.has(`${HOME}/documentos`) && state.read.has(`${HOME}/documentos/plantao.txt`),
     },
@@ -243,6 +245,7 @@ const STAGES = [
         name: 'Arquivos ocultos',
         objective: 'Mostre os arquivos ocultos da home e leia .rota-segura.',
         hint: 'Arquivos com nome iniciado por ponto ficam ocultos no ls. Use ls -la e depois cat .rota-segura.',
+        lesson: 'No Linux, nomes que começam com ponto ficam ocultos no ls. Atacantes usam isso para esconder arquivos. ls -la mostra tudo.',
         flag: 'FLAG{OLHO_NO_PONTO}',
         isComplete: () => state.listedHidden && state.read.has(`${HOME}/.rota-segura`),
     },
@@ -251,6 +254,7 @@ const STAGES = [
         name: 'Ferramentas de análise',
         objective: 'Atualize o índice APT e instale net-tools.',
         hint: 'Atualize o índice com sudo apt update e instale com sudo apt install net-tools.',
+        lesson: 'apt update atualiza a lista de pacotes e apt install instala. Ferramentas de rede ajudam a investigar conexões suspeitas.',
         flag: 'FLAG{FERRAMENTA_CERTA}',
         isComplete: () => state.packages.has('net-tools'),
     },
@@ -259,6 +263,7 @@ const STAGES = [
         name: 'Tentativas de login',
         objective: 'Conte quantas senhas foram recusadas no log de autenticação.',
         hint: 'Leia /var/log/auth.log com grep Failed. Cada linha que aparece é uma tentativa recusada: conte as linhas.',
+        lesson: 'auth.log registra cada tentativa de login. Muitas falhas seguidas vindas do mesmo endereço indicam força bruta.',
         flag: 'FLAG{6_TENTATIVAS}',
         isComplete: () => state.read.has('/var/log/auth.log'),
     },
@@ -267,6 +272,7 @@ const STAGES = [
         name: 'Contas suspeitas',
         objective: 'Confira as contas do sistema e o checklist de auditoria.',
         hint: 'Só o root deve ter UID 0 (o terceiro campo de /etc/passwd). Use grep ":0:" /etc/passwd e leia checklist-contas.txt em documentos.',
+        lesson: 'Somente o root deve ter UID 0. Uma segunda conta com UID 0 dá acesso de administrador e funciona como porta dos fundos.',
         flag: 'FLAG{CONTA_OCULTA}',
         isComplete: () => state.read.has(PASSWD_FILE) && state.read.has(CHECKLIST_FILE),
     },
@@ -275,6 +281,7 @@ const STAGES = [
         name: 'Permissões',
         objective: 'Leia o upload.php e tire a permissão de escrita dos outros usuários.',
         hint: 'ls -l /var/www mostra as permissões. Em -rwxrwxrwx, os três últimos caracteres valem para outros usuários: use chmod o-w /var/www/upload.php.',
+        lesson: 'Permissão de escrita para outros usuários permite alterar o arquivo. chmod o-w remove essa permissão sem mudar o dono.',
         flag: 'FLAG{PERMISSAO_FECHADA}',
         isComplete: () => state.read.has(UPLOAD_FILE) && !othersCanWrite(UPLOAD_FILE),
     },
@@ -283,6 +290,7 @@ const STAGES = [
         name: 'Porta dos fundos',
         objective: 'Encontre o arquivo oculto que o atacante deixou no site e leia o conteúdo.',
         hint: 'O access.log mostra GET /assets/.cache. Use find /var/www -name ".cache" e depois cat no arquivo encontrado.',
+        lesson: 'Webshell é um script que executa comandos enviados pela web. Atacantes escondem esses arquivos com nomes que começam com ponto.',
         flag: 'FLAG{WEBSHELL_ENCONTRADA}',
         isComplete: () => state.read.has(WEBSHELL_FILE),
     },
@@ -291,6 +299,7 @@ const STAGES = [
         name: 'Contenção',
         objective: 'Encontre a pasta persistente em /tmp e remova-a do servidor.',
         hint: 'O syslog aponta /tmp/.x7/keepalive. Use ls -la /tmp para achar a pasta oculta e rm -r /tmp/.x7. Matar só o processo não basta: o cron o reinicia.',
+        lesson: 'Matar o processo não basta se o programa continua no disco, porque o cron o reinicia. Contenção é remover a persistência.',
         flag: 'FLAG{CONTENCAO_FEITA}',
         isComplete: () => isContained(),
     },
@@ -299,6 +308,7 @@ const STAGES = [
         name: 'Limpeza do site',
         objective: 'Remova o webshell do site para que o atacante perca a porta de entrada.',
         hint: 'Apague o arquivo com rm /var/www/assets/.cache. Confira antes com ls -la /var/www/assets.',
+        lesson: 'Remover o webshell fecha a porta de entrada, mas também é preciso corrigir a falha que permitiu o upload.',
         flag: 'FLAG{SITE_LIMPO}',
         isComplete: () => !lookup(WEBSHELL_FILE),
     },
@@ -307,6 +317,7 @@ const STAGES = [
         name: 'Atribuição',
         objective: 'Correlacione o IP atacante nos logs e envie a flag final.',
         hint: 'Procure o IP nos dois logs: grep 185.220.101.17 /var/log/access.log /var/log/auth.log.',
+        lesson: 'Um mesmo IP em vários logs liga os eventos entre si. Cruzar fontes diferentes é o que transforma sinais em conclusão.',
         flag: `FLAG{${ATTACKER_IP}}`,
         isComplete: () => ATTACKER_LOGS.every((path) => state.attackerLogs.has(path)) && isContained(),
     },
@@ -326,6 +337,12 @@ const MANUAL = {
     find: 'find - procura arquivos na árvore de diretórios\nUso: find CAMINHO -name PADRÃO (aceita * e ?)',
     file: 'file - identifica o tipo de arquivo',
     wc: 'wc - conta linhas (-l), palavras (-w) e bytes (-c)',
+    sort: 'sort - ordena as linhas\nUse -r para ordem inversa e -n para ordenar por número.',
+    uniq: 'uniq - remove linhas repetidas em sequência\nCom -c, mostra quantas vezes cada linha apareceu. Costuma vir depois de sort.',
+    cut: 'cut - recorta colunas de cada linha\nUso: cut -d DELIMITADOR -f CAMPOS ARQUIVO. Ex.: cut -d: -f1 /etc/passwd',
+    ss: 'ss - mostra as portas em escuta e o programa que as usa.',
+    '|': 'pipe (|) - envia a saída de um comando para a entrada do próximo.\nEx.: cat arquivo | sort | uniq -c',
+    '>': 'redirecionamento (>) - grava a saída em um arquivo, substituindo o conteúdo.\nUse >> para acrescentar no fim do arquivo.',
     chmod: 'chmod - altera permissões\nExemplos: chmod 755 arquivo; chmod +x arquivo; chmod u-w arquivo.',
     mkdir: 'mkdir - cria diretórios\n-p cria os diretórios pais quando necessário.',
     touch: 'touch - cria um arquivo vazio',
@@ -360,6 +377,8 @@ const COMMAND_GUIDE = [
     { command: 'kill', description: 'Encerra um processo pelo número PID. Alguns processos voltam sozinhos.', example: 'kill 1234' },
     { command: 'rm -r', description: 'Apaga uma pasta e tudo que está dentro dela. Confira o caminho antes!', example: 'rm -r pasta-de-teste' },
     { command: 'man', description: 'Explica um comando. Use man seguido do nome do comando.', example: 'man ls' },
+    { command: '|', description: 'Envia a saída de um comando para o próximo. Um comando alimenta o outro.', example: 'ls -la | sort' },
+    { command: '>', description: 'Salva a saída em um arquivo. Use >> para acrescentar no fim.', example: 'echo teste > nota.txt' },
     { command: 'hint', description: `Mostra a pista da etapa atual. Custa ${HINT_COST} XP, uma vez por etapa.`, example: 'hint' },
     { command: 'submit', description: 'Envia a flag que você encontrou na investigação.', example: 'submit FLAG{...}' },
 ];
@@ -411,7 +430,18 @@ function scrollToBottom() {
     dom.terminal.scrollTop = dom.terminal.scrollHeight;
 }
 
+/* Saída guardada para o próximo comando do pipe ou para um arquivo ("> arquivo"). Nula quando a saída vai para a tela. */
+let capture = null;
+/* Entrada vinda do comando anterior no pipe. Nula quando o comando não recebe nada por pipe. */
+let pipeInput = null;
+/* Mensagens de erro, aviso e dica vão sempre para a tela, como o stderr de um shell. */
+const SCREEN_TONES = ['error', 'warn', 'hint'];
+
 function print(text = '', tone = '') {
+    if (capture && !SCREEN_TONES.includes(tone)) {
+        capture.push(text);
+        return document.createElement('div');
+    }
     const line = document.createElement('div');
     line.className = tone ? `out ${tone}` : 'out';
     line.textContent = text;
@@ -421,7 +451,22 @@ function print(text = '', tone = '') {
     return line;
 }
 
-const fail = (text) => print(text, 'error');
+/* Explica em linguagem simples os erros mais comuns, logo abaixo da mensagem original. */
+const ERROR_LESSONS = [
+    [/Permission denied/, 'Permissão negada: o arquivo ou a pasta é de outro usuário. Confira o dono com ls -l. Ações de administrador precisam de sudo.'],
+    [/No such file or directory/, 'Caminho inexistente. Confira a grafia com ls ou use Tab para completar o nome.'],
+    [/Is a directory/, 'Você tentou tratar uma pasta como arquivo. Use ls para ver o que há dentro dela.'],
+    [/command not found/, 'Comando desconhecido. Use help para ver a lista de comandos disponíveis.'],
+    [/Execute com sudo/, 'Gerenciar pacotes exige privilégio de administrador: escreva sudo antes do comando.'],
+    [/Operation not permitted/, 'Processos do sistema não podem ser encerrados por um usuário comum.'],
+    [/Usage:|usage:/, 'Faltou algum argumento. Use man <comando> para ver a sintaxe.'],
+];
+
+function fail(text) {
+    print(text, 'error');
+    const lesson = ERROR_LESSONS.find(([pattern]) => pattern.test(text));
+    if (lesson) print(`↳ ${lesson[1]}`, 'hint');
+}
 
 function clearOutput() {
     dom.output.replaceChildren();
@@ -429,9 +474,10 @@ function clearOutput() {
 
 /* ---------- Interpretação de comandos ---------- */
 
+/* Aspas podem começar no meio da palavra (ex.: -d" "). Elas somem ao separar os argumentos. */
 function tokenize(line) {
-    const tokens = line.match(/"[^"]*"|'[^']*'|\S+/g) ?? [];
-    return tokens.map((token) => token.replace(/^(["'])(.*)\1$/, '$2'));
+    const tokens = line.match(/(?:"[^"]*"|'[^']*'|\S)+/g) ?? [];
+    return tokens.map((token) => token.replace(/"([^"]*)"|'([^']*)'/g, (_, double, single) => double ?? single));
 }
 
 function parseArgs(args) {
@@ -455,14 +501,82 @@ function run(rawLine) {
     if (!line) return;
     rememberCommand(line);
     print(`${promptText()} ${line}`, 'dim');
-    const [name, ...args] = tokenize(line);
     try {
-        execute(name, args);
+        runPipeline(line);
     } catch (error) {
         console.error(error);
-        fail(`bash: erro interno ao executar "${name}". Veja o console do navegador.`);
+        capture = null;
+        pipeInput = null;
+        fail('bash: erro interno ao executar o comando. Veja o console do navegador.');
     }
     render();
+}
+
+/* Divide o texto pelo separador, ignorando o que estiver entre aspas. */
+function splitUnquoted(text, separator) {
+    const parts = [''];
+    let quote = null;
+    for (const char of text) {
+        if (!quote && char === separator) {
+            parts.push('');
+            continue;
+        }
+        if (char === quote) quote = null;
+        else if (!quote && (char === '"' || char === "'")) quote = char;
+        parts[parts.length - 1] += char;
+    }
+    return parts.map((part) => part.trim());
+}
+
+/* Separa o redirecionamento ("> arquivo" ou ">> arquivo") dos argumentos. target vazio significa que faltou o arquivo. */
+function splitRedirection(tokens) {
+    const index = tokens.findIndex((token) => token === '>' || token === '>>');
+    if (index === -1) return { words: tokens, target: null, append: false };
+    return { words: tokens.slice(0, index), target: tokens[index + 1] ?? '', append: tokens[index] === '>>' };
+}
+
+/* Executa um comando e devolve o que ele escreveu, se a saída não for para a tela. */
+function runStage(words, input, captured) {
+    capture = captured ? [] : null;
+    pipeInput = input;
+    try {
+        execute(words[0], words.slice(1));
+        return capture;
+    } finally {
+        capture = null;
+        pipeInput = null;
+    }
+}
+
+/* "a | b > arquivo": a saída de cada comando vira a entrada do próximo, como num shell real. */
+function runPipeline(line) {
+    const stages = splitUnquoted(line, '|');
+    let input = null;
+    for (const [index, stage] of stages.entries()) {
+        const { words, target, append } = splitRedirection(tokenize(stage));
+        if (words.length === 0 || target === '') return fail('bash: erro de sintaxe perto de "|" ou ">".');
+
+        const isLast = index === stages.length - 1;
+        const output = runStage(words, input, target !== null || !isLast);
+        if (target === null) {
+            input = output ? output.map((text) => `${text}\n`).join('') : null;
+        } else {
+            writeFile(target, output, append);
+            input = '';
+        }
+    }
+}
+
+function writeFile(operand, lines, append) {
+    const path = absolutePath(operand);
+    const { parent, name } = parentOf(path);
+    if (path === '/' || parent?.type !== 'dir') return fail(`bash: ${operand}: No such file or directory`);
+
+    const existing = parent.children[name];
+    if (existing?.type === 'dir') return fail(`bash: ${operand}: Is a directory`);
+    const text = lines.map((line) => `${line}\n`).join('');
+    if (existing && append) existing.content += text;
+    else parent.children[name] = createFile(text, 'analista');
 }
 
 function rememberCommand(line) {
@@ -474,10 +588,10 @@ function rememberCommand(line) {
 /* ---------- Comandos ---------- */
 
 function cmdHelp() {
-    print('Comandos: pwd ls cd cat less head tail touch mkdir cp mv rm rmdir grep find file wc chmod', 'good');
-    print('          sudo apt update|install|remove|list · ps aux · top · kill · whoami · id · uname -a', 'good');
+    print('Comandos: pwd ls cd cat less head tail touch mkdir cp mv rm rmdir grep find file wc chmod sort uniq cut', 'good');
+    print('          sudo apt update|install|remove|list · ps aux · top · kill · ss · whoami · id · uname -a', 'good');
     print('          history man hint clear echo date submit FLAG{...}', 'good');
-    print('Use man <comando> para explicações. Tab completa comandos e caminhos. O ambiente é totalmente simulado.');
+    print('Encadeie com | (ex.: cat arquivo | sort) e salve a saída com > ou >>. Tab completa. man <comando> explica.');
 }
 
 function formatLong(name, node) {
@@ -537,7 +651,10 @@ function readFiles(command, args) {
     const countIndex = args.indexOf('-n');
     const count = countIndex === -1 ? 10 : Number(args[countIndex + 1]) || 10;
     const operands = countIndex === -1 ? args : args.filter((_, index) => index !== countIndex && index !== countIndex + 1);
-    if (!operands.length) return fail(`${command}: missing file operand`);
+    if (!operands.length) {
+        if (pipeInput === null) return fail(`${command}: missing file operand`);
+        return print(selectLines(pipeInput, command, count));
+    }
 
     for (const operand of operands) {
         const path = absolutePath(operand);
@@ -664,13 +781,28 @@ function cmdConfirm(args) {
     print(`Removido: ${target}. −${CONFIRM_PENALTY} XP por destruir dados críticos.`, 'warn');
 }
 
+/* Imprime as linhas que contêm o padrão e devolve quantas foram encontradas. */
+function searchText(text, pattern, flags, label) {
+    const ignoreCase = flags.has('i');
+    const needle = ignoreCase ? pattern.toLowerCase() : pattern;
+    const matches = toLines(text)
+        .map((line, index) => ({ line, number: index + 1 }))
+        .filter(({ line }) => (ignoreCase ? line.toLowerCase() : line).includes(needle));
+    if (flags.has('c')) print(`${label}${matches.length}`);
+    else matches.forEach(({ line, number }) => print(`${label}${flags.has('n') ? `${number}:` : ''}${line}`));
+    return matches.length;
+}
+
 function cmdGrep(args) {
     const { flags, operands } = parseArgs(args);
     const [pattern, ...files] = operands;
-    if (!pattern || !files.length) return fail('Usage: grep [-i] [-n] [-c] PATTERNS [FILE]...');
+    const usage = 'Usage: grep [-i] [-n] [-c] PATTERNS [FILE]...';
+    if (!pattern) return fail(usage);
+    if (!files.length) {
+        if (pipeInput === null) return fail(usage);
+        return searchText(pipeInput, pattern, flags, '');
+    }
 
-    const ignoreCase = flags.has('i');
-    const needle = ignoreCase ? pattern.toLowerCase() : pattern;
     const showFileName = files.length > 1;
     for (const file of files) {
         const path = absolutePath(file);
@@ -685,16 +817,8 @@ function cmdGrep(args) {
         }
 
         state.read.add(path);
-        const matches = node.content.split('\n')
-            .map((line, index) => ({ line, number: index + 1 }))
-            .filter(({ line }) => (ignoreCase ? line.toLowerCase() : line).includes(needle));
-        const fileLabel = showFileName ? `${file}:` : '';
-        if (flags.has('c')) {
-            print(`${fileLabel}${matches.length}`);
-        } else {
-            matches.forEach(({ line, number }) => print(`${fileLabel}${flags.has('n') ? `${number}:` : ''}${line}`));
-        }
-        if (pattern === ATTACKER_IP && matches.length > 0) state.attackerLogs.add(path);
+        const matchCount = searchText(node.content, pattern, flags, showFileName ? `${file}:` : '');
+        if (pattern === ATTACKER_IP && matchCount > 0) state.attackerLogs.add(path);
     }
 }
 
@@ -740,11 +864,11 @@ function cmdFile(args) {
 
 function cmdWc(args) {
     const { flags, operands } = parseArgs(args);
-    if (!operands.length) return fail('wc: missing file operand');
+    if (!operands.length && pipeInput === null) return fail('wc: missing file operand');
     const showAll = flags.size === 0;
 
-    for (const operand of operands) {
-        const node = lookup(absolutePath(operand));
+    for (const operand of operands.length ? operands : [null]) {
+        const node = operand === null ? { type: 'file', content: pipeInput } : lookup(absolutePath(operand));
         if (node?.type !== 'file') {
             fail(`wc: ${operand}: No such file or directory`);
             continue;
@@ -754,8 +878,96 @@ function cmdWc(args) {
         if (showAll || flags.has('l')) counts.push(text.split('\n').length - 1);
         if (showAll || flags.has('w')) counts.push(text.trim() ? text.trim().split(/\s+/).length : 0);
         if (showAll || flags.has('c')) counts.push(new TextEncoder().encode(text).length);
-        print(`${counts.join(' ')} ${operand}`);
+        print(`${counts.join(' ')}${operand === null ? '' : ` ${operand}`}`);
     }
+}
+
+/* Linhas de um texto, sem a quebra final que todo arquivo tem. */
+const toLines = (text) => (text ? text.replace(/\n$/, '').split('\n') : []);
+
+/* Texto de um filtro (sort, uniq, cut): o arquivo indicado ou a saída do comando anterior. Nulo se houver erro. */
+function filterInput(command, operands) {
+    if (!operands.length) {
+        if (pipeInput === null) fail(`${command}: missing file operand`);
+        return pipeInput;
+    }
+    const path = absolutePath(operands[0]);
+    const node = lookup(path);
+    if (node?.type !== 'file') {
+        fail(`${command}: ${operands[0]}: No such file or directory`);
+        return null;
+    }
+    state.read.add(path);
+    return node.content;
+}
+
+function cmdSort(args) {
+    const { flags, operands } = parseArgs(args);
+    const text = filterInput('sort', operands);
+    if (text === null) return;
+
+    const compare = flags.has('n')
+        ? (a, b) => (Number.parseFloat(a) || 0) - (Number.parseFloat(b) || 0)
+        : (a, b) => a.localeCompare(b);
+    const lines = toLines(text).sort(compare);
+    if (flags.has('r')) lines.reverse();
+    lines.forEach((line) => print(line));
+}
+
+/* Junta linhas iguais que aparecem em sequência. Com -c, mostra quantas vezes cada uma apareceu. */
+function cmdUniq(args) {
+    const { flags, operands } = parseArgs(args);
+    const text = filterInput('uniq', operands);
+    if (text === null) return;
+
+    const groups = [];
+    for (const line of toLines(text)) {
+        const last = groups.at(-1);
+        if (last?.line === line) last.count += 1;
+        else groups.push({ line, count: 1 });
+    }
+    groups.forEach(({ line, count }) => print(flags.has('c') ? `${String(count).padStart(7)} ${line}` : line));
+}
+
+/* Lê opções com valor, como "-d:" ou "-d :", e devolve os valores e os operandos restantes. */
+function parseValueOptions(args, letters) {
+    const values = {};
+    const operands = [];
+    for (let index = 0; index < args.length; index++) {
+        const arg = args[index];
+        const letter = letters.find((item) => arg.startsWith(`-${item}`));
+        if (!letter) operands.push(arg);
+        else if (arg.length > 2) values[letter] = arg.slice(2);
+        else values[letter] = args[++index];
+    }
+    return { values, operands };
+}
+
+function cmdCut(args) {
+    const { values, operands } = parseValueOptions(args, ['d', 'f']);
+    if (!values.f) return fail('cut: você precisa informar os campos com -f. Ex.: cut -d: -f1');
+    const fields = values.f.split(',').map(Number);
+    if (fields.some((field) => !Number.isInteger(field) || field < 1)) return fail(`cut: campo inválido: ${values.f}`);
+
+    const delimiter = values.d ?? '\t';
+    const text = filterInput('cut', operands);
+    if (text === null) return;
+
+    for (const line of toLines(text)) {
+        if (!line.includes(delimiter)) {
+            print(line);
+            continue;
+        }
+        const parts = line.split(delimiter);
+        print(fields.map((field) => parts[field - 1]).filter((part) => part !== undefined).join(delimiter));
+    }
+}
+
+/* Portas em escuta do servidor. Some com o nginx quando o site cai. */
+function cmdSs() {
+    print('Netid State  Recv-Q Send-Q Local Address:Port  Process');
+    print('tcp   LISTEN 0      128          0.0.0.0:22   users:(("sshd",pid=941,fd=3))');
+    if (state.siteUp) print('tcp   LISTEN 0      511          0.0.0.0:80   users:(("nginx",pid=842,fd=6))');
 }
 
 const RWX = 'rwx';
@@ -945,6 +1157,7 @@ function cmdSubmit(args) {
     state.score += STAGE_XP;
     state.stage += 1;
     print(`Flag validada: ${flag}`, 'good');
+    print(`Lição: ${stage.lesson}`, 'lesson');
     celebrate();
     if (rankIndex(state.score) > previousRank) announceLevelUp();
 
@@ -972,10 +1185,14 @@ const COMMANDS = {
     find: cmdFind,
     file: cmdFile,
     wc: cmdWc,
+    sort: cmdSort,
+    uniq: cmdUniq,
+    cut: cmdCut,
     chmod: cmdChmod,
     sudo: runAsRoot,
     apt: cmdApt,
     ps: cmdPs,
+    ss: cmdSs,
     top: cmdTop,
     kill: cmdKill,
     whoami: () => print('analista'),
@@ -1454,6 +1671,7 @@ function renderCommandGuide() {
         card.className = 'cmd-card';
         card.addEventListener('click', () => {
             dom.input.value = example;
+            setPanelOpen(false);
             dom.input.focus();
         });
 
@@ -1504,6 +1722,12 @@ function startSession() {
     dom.input.focus();
 }
 
+/* Em celulares, o painel de missão abre como uma folha sobre o terminal. */
+function setPanelOpen(open) {
+    document.body.classList.toggle('panel-open', open);
+    dom.panelBtn.setAttribute('aria-expanded', String(open));
+}
+
 function bindEvents() {
     // "submit" do formulário cobre o Enter do teclado físico e o botão Enviar do celular.
     $('#commandForm').addEventListener('submit', (event) => {
@@ -1523,6 +1747,7 @@ function bindEvents() {
     $('#startBtn').addEventListener('click', startSession);
     $('#skipBtn').addEventListener('click', startSession);
     $('#restartBtn').addEventListener('click', () => location.reload());
+    dom.panelBtn.addEventListener('click', () => setPanelOpen(!document.body.classList.contains('panel-open')));
     dom.closeFinish.addEventListener('click', () => dom.finish.classList.add('hidden'));
     bindTabs();
     dom.setupForm.addEventListener('submit', onSetupSubmit);

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#07100c">
     <link rel="stylesheet" href="style.css">
     <title>Operação Raiz — laboratório Linux</title>
@@ -20,8 +20,9 @@
                 </div>
             </div>
             <div class="top-actions">
-                <span class="pill" id="stagePill">● EXERCÍCIO 01 / 05</span>
-                <button class="btn" id="restartBtn">↻ Reiniciar</button>
+                <span class="pill" id="stagePill">● EXERCÍCIO 01 / 10</span>
+                <button class="btn panel-toggle" id="panelBtn" type="button" aria-controls="side" aria-expanded="false">Missão</button>
+                <button class="btn" id="restartBtn" type="button">↻ Reiniciar</button>
             </div>
         </header>
 
@@ -48,15 +49,17 @@
                 </div>
                 <div class="status-row"><span>SIMULAÇÃO LOCAL · nenhum comando é executado no sistema real</span><span id="clock">--:--:--</span></div>
             </section>
-            <aside class="side">
+
+            <aside class="side" id="side">
                 <section class="card section">
                     <div class="section-head"><span>Estado do servidor</span><span class="status danger" id="serverStatus" role="status">COMPROMETIDO</span></div>
-                    <div class="xpbox">
+                    <div class="xp">
                         <div class="xpinfo"><span id="rank">Novato</span><span id="score">0 XP</span></div>
                         <div class="xpbar" aria-hidden="true"><i id="xpFill"></i></div>
+                        <div class="xpinfo"><span>Progressão do analista</span><span id="levelCount">Nível 1</span></div>
                     </div>
-                    <div class="xpinfo" style="margin-top:5px"><span>Progressão do analista</span><span id="levelCount">Nível 1</span></div>
                 </section>
+
                 <section class="card panel">
                     <div class="tablist" role="tablist" aria-label="Painéis laterais">
                         <button class="tab" type="button" role="tab" id="tab-objectives" aria-controls="panel-objectives" aria-selected="true" tabindex="0">Objetivos</button>
@@ -64,7 +67,7 @@
                     </div>
 
                     <div class="panel-body" role="tabpanel" id="panel-objectives" aria-labelledby="tab-objectives">
-                        <div class="section-head"><span>Objetivos da missão</span><span class="eyebrow" id="objectiveCount">0/5</span></div>
+                        <div class="section-head"><span>Objetivos da missão</span><span class="eyebrow" id="objectiveCount">0/10</span></div>
                         <div class="objective-list" id="objectives"></div>
                     </div>
 
@@ -72,38 +75,35 @@
                         <div class="section-head"><span>Guia de comandos</span><span class="eyebrow">CLIQUE PARA USAR</span></div>
                         <p class="mini">Clique em um comando para colocá-lo na linha do terminal e depois aperte Enter para executar.</p>
                         <div class="cmd-grid" id="commandGrid"></div>
-                        <p class="mini" style="margin-top:12px">Setas: histórico · Tab: completar comandos e caminhos · Ctrl+L: limpar · Ctrl+C: cancelar linha</p>
+                        <p class="mini note">Setas: histórico · Tab: completar · Ctrl+L: limpar · Ctrl+C: cancelar linha</p>
+                    </div>
+                </section>
+
+                <section class="card monitor" aria-label="Monitor do sistema">
+                    <canvas class="matrix" id="matrix" width="220" height="148" aria-hidden="true"></canvas>
+                    <div class="section-head"><span>Monitor do sistema</span><span class="eyebrow">AO VIVO · srv-web01</span></div>
+                    <div class="metrics">
+                        <div class="metric"><label>CPU</label><strong id="cpuValue">78%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                                <polyline id="cpuLine" points="0,16 15,10 28,15 42,5 56,13 70,8 84,12 100,3" />
+                            </svg></div>
+                        <div class="metric"><label>MEMÓRIA</label><strong id="ramValue">62%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                                <polyline id="ramLine" points="0,14 15,12 28,9 42,11 56,7 70,10 84,5 100,8" />
+                            </svg></div>
+                        <div class="metric"><label>REDE</label><strong id="netValue">4.2 Mb</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                                <polyline id="netLine" points="0,18 15,13 28,17 42,4 56,10 70,5 84,15 100,7" />
+                            </svg></div>
+                    </div>
+                    <div class="monitor-log">
+                        <div class="section-head"><span>Log ao vivo</span><span class="eyebrow">SYSLOG</span></div>
+                        <div class="log" id="syslog"></div>
+                    </div>
+                    <div class="monitor-foot">
+                        <span class="eyebrow">CONEXÕES OBSERVADAS · 12 tentativas</span>
+                        <div class="ips"><span class="ip hot">185.220.101.17 · suspeito</span><span class="ip">10.0.0.1 · gateway</span><span class="ip">10.0.0.24 · web01</span></div>
                     </div>
                 </section>
             </aside>
         </main>
-
-        <section class="card monitor" aria-label="Monitor do sistema">
-            <canvas class="matrix" id="matrix" width="220" height="148" aria-hidden="true"></canvas>
-            <div class="section-head"><span>Monitor do sistema</span><span class="eyebrow">AO VIVO · srv-web01</span></div>
-            <div class="monitor-grid">
-                <div class="metrics">
-                    <div class="metric"><label>CPU</label><strong id="cpuValue">78%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                            <polyline id="cpuLine" points="0,16 15,10 28,15 42,5 56,13 70,8 84,12 100,3" />
-                        </svg></div>
-                    <div class="metric"><label>MEMÓRIA</label><strong id="ramValue">62%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                            <polyline id="ramLine" points="0,14 15,12 28,9 42,11 56,7 70,10 84,5 100,8" />
-                        </svg></div>
-                    <div class="metric"><label>REDE</label><strong id="netValue">4.2 Mb</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                            <polyline id="netLine" points="0,18 15,13 28,17 42,4 56,10 70,5 84,15 100,7" />
-                        </svg></div>
-                </div>
-                <div class="monitor-log">
-                    <div class="section-head"><span>Log ao vivo</span><span class="eyebrow">SYSLOG</span></div>
-                    <div class="log" id="syslog"></div>
-                </div>
-            </div>
-            <div class="monitor-foot">
-                <span class="eyebrow">CONEXÕES OBSERVADAS · 12 tentativas</span>
-                <div class="ips"><span class="ip hot">185.220.101.17 · suspeito</span><span class="ip">10.0.0.1 · gateway</span><span class="ip">10.0.0.24 · web01</span></div>
-            </div>
-        </section>
-        <div class="footer">LABORATÓRIO DIDÁTICO · arquivos, processos, rede e pacotes são dados fictícios em memória</div>
     </div>
     <div class="toast" id="toast" role="status">FLAG CAPTURADA</div>
     <div class="confetti" id="confetti" aria-hidden="true"></div>
@@ -146,6 +146,7 @@
             <ul>
                 <li>Comece com <b>pwd</b> e <b>ls</b>. Não sabe um comando? Veja o painel <b>Comandos</b> ao lado.</li>
                 <li>As flags aparecem na investigação. Envie cada uma com <b>submit FLAG{...}</b>.</li>
+                <li>Encadeie comandos com <b>|</b> e salve saídas com <b>&gt;</b>. Ex.: <b>cat arquivo | sort</b>.</li>
                 <li>Dicas custam 20 XP, cobrados uma vez por etapa.</li>
                 <li>Remoções críticas pedem confirmação; destruir arquivos importantes afeta o site e a sua pontuação.</li>
             </ul>
