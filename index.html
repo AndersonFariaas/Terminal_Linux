@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#07100c">
+    <link rel="stylesheet" href="style.css">
+    <title>Operação Raiz — laboratório Linux</title>
+</head>
+
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <div class="mark" aria-hidden="true">$</div>
+                <div>
+                    <h1>OPERAÇÃO RAIZ <span class="accent">//</span> LAB LINUX</h1>
+                    <small>SIMULADOR DE INCIDENTE · srv-web01 · AMBIENTE ISOLADO</small>
+                </div>
+            </div>
+            <div class="top-actions">
+                <span class="pill" id="stagePill">● EXERCÍCIO 01 / 05</span>
+                <button class="btn" id="soundBtn" aria-pressed="false">♫ Som: off</button>
+                <button class="btn" id="restartBtn">↻ Reiniciar</button>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section class="card terminal-card" aria-label="Terminal Linux simulado">
+                <div class="term-title">
+                    <div class="dots" aria-hidden="true"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+                    <div class="caption" id="caption">analista@srv-web01: ~</div>
+                    <span class="spacer" aria-hidden="true"></span>
+                </div>
+                <div class="terminal" id="terminal" role="log" aria-live="polite" aria-label="Saída do terminal">
+                    <div id="output"></div>
+                    <form class="inputrow" id="commandForm" autocomplete="off">
+                        <span class="prompt" id="prompt">analista@srv-web01:~$</span>
+                        <input class="command-input" id="command" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="Comando do terminal">
+                    </form>
+                </div>
+                <div class="event" id="event">*** LEVEL UP! ***</div>
+                <div class="quickkeys" aria-label="Teclas rápidas">
+                    <button type="button" class="btn" data-key="Tab">Tab</button>
+                    <button type="button" class="btn" data-key="ArrowUp" aria-label="Comando anterior">↑</button>
+                    <button type="button" class="btn" data-key="ArrowDown" aria-label="Próximo comando">↓</button>
+                    <button type="button" class="btn" data-key="Clear">Limpar</button>
+                </div>
+                <div class="status-row"><span>SIMULAÇÃO LOCAL · nenhum comando é executado no sistema real</span><span id="clock">--:--:--</span></div>
+            </section>
+            <aside class="side">
+                <section class="card section">
+                    <div class="section-head"><span>Estado do servidor</span><span class="status danger" id="serverStatus" role="status">COMPROMETIDO</span></div>
+                    <div class="xpbox">
+                        <div class="xpinfo"><span id="rank">Novato</span><span id="score">0 XP</span></div>
+                        <div class="xpbar" aria-hidden="true"><i id="xpFill"></i></div>
+                    </div>
+                    <div class="xpinfo" style="margin-top:5px"><span>Progressão do analista</span><span id="levelCount">Nível 1</span></div>
+                </section>
+                <section class="card panel">
+                    <div class="tablist" role="tablist" aria-label="Painéis laterais">
+                        <button class="tab" type="button" role="tab" id="tab-objectives" aria-controls="panel-objectives" aria-selected="true" tabindex="0">Objetivos</button>
+                        <button class="tab" type="button" role="tab" id="tab-commands" aria-controls="panel-commands" aria-selected="false" tabindex="-1">Comandos</button>
+                    </div>
+
+                    <div class="panel-body" role="tabpanel" id="panel-objectives" aria-labelledby="tab-objectives">
+                        <div class="section-head"><span>Objetivos da missão</span><span class="eyebrow" id="objectiveCount">0/5</span></div>
+                        <div class="objective-list" id="objectives"></div>
+                    </div>
+
+                    <div class="panel-body" role="tabpanel" id="panel-commands" aria-labelledby="tab-commands" hidden>
+                        <div class="section-head"><span>Guia de comandos</span><span class="eyebrow">CLIQUE PARA USAR</span></div>
+                        <p class="mini">Clique em um comando para colocá-lo na linha do terminal e depois aperte Enter para executar.</p>
+                        <div class="cmd-grid" id="commandGrid"></div>
+                        <p class="mini" style="margin-top:12px">Setas: histórico · Tab: completar comandos e caminhos · Ctrl+L: limpar · Ctrl+C: cancelar linha</p>
+                    </div>
+                </section>
+            </aside>
+        </main>
+
+        <section class="card monitor" aria-label="Monitor do sistema">
+            <canvas class="matrix" id="matrix" width="220" height="148" aria-hidden="true"></canvas>
+            <div class="section-head"><span>Monitor do sistema</span><span class="eyebrow">AO VIVO · srv-web01</span></div>
+            <div class="monitor-grid">
+                <div class="metrics">
+                    <div class="metric"><label>CPU</label><strong id="cpuValue">78%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                            <polyline id="cpuLine" points="0,16 15,10 28,15 42,5 56,13 70,8 84,12 100,3" />
+                        </svg></div>
+                    <div class="metric"><label>MEMÓRIA</label><strong id="ramValue">62%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                            <polyline id="ramLine" points="0,14 15,12 28,9 42,11 56,7 70,10 84,5 100,8" />
+                        </svg></div>
+                    <div class="metric"><label>REDE</label><strong id="netValue">4.2 Mb</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                            <polyline id="netLine" points="0,18 15,13 28,17 42,4 56,10 70,5 84,15 100,7" />
+                        </svg></div>
+                </div>
+                <div class="monitor-log">
+                    <div class="section-head"><span>Log ao vivo</span><span class="eyebrow">SYSLOG</span></div>
+                    <div class="log" id="syslog"></div>
+                </div>
+            </div>
+            <div class="monitor-foot">
+                <span class="eyebrow">CONEXÕES OBSERVADAS · 12 tentativas</span>
+                <div class="ips"><span class="ip hot">185.220.101.17 · suspeito</span><span class="ip">10.0.0.1 · gateway</span><span class="ip">10.0.0.24 · web01</span></div>
+            </div>
+        </section>
+        <div class="footer">LABORATÓRIO DIDÁTICO · arquivos, processos, rede e pacotes são dados fictícios em memória</div>
+    </div>
+    <div class="toast" id="toast" role="status">FLAG CAPTURADA</div>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+    <div class="boot hidden" id="boot" aria-live="polite">
+        <div class="boot-box">
+            <div class="boot-log" id="bootLog" role="log" aria-label="Inicialização do servidor"></div>
+        </div>
+    </div>
+
+    <div class="modalback" id="setup">
+        <form class="modal setup-modal" id="setupForm" role="dialog" aria-modal="true" aria-labelledby="setupTitle" novalidate>
+            <div class="eyebrow">CONFIGURAÇÃO DE ACESSO</div>
+            <h2 id="setupTitle">Identifique o analista</h2>
+            <p class="mini">Esses dados aparecem no boot e no certificado. Ficam salvos só neste navegador.</p>
+
+            <label class="field">
+                <span>Nome completo</span>
+                <input name="nome" id="fieldNome" maxlength="40" autocomplete="name" placeholder="Ex.: Maria Souza">
+            </label>
+
+            <fieldset class="field choices">
+                <legend>Gênero</legend>
+                <label class="choice"><input type="radio" name="genero" value="masculino"><span>Masculino</span></label>
+                <label class="choice"><input type="radio" name="genero" value="feminino"><span>Feminino</span></label>
+                <label class="choice"><input type="radio" name="genero" value="neutro" checked><span>Prefiro não informar</span></label>
+            </fieldset>
+
+            <fieldset class="field choices">
+                <legend>Cor do terminal</legend>
+                <label class="choice theme-choice"><input type="radio" name="tema" value="verde" checked><span class="swatch swatch-verde" aria-hidden="true"></span><span>Preto e verde</span></label>
+                <label class="choice theme-choice"><input type="radio" name="tema" value="roxo"><span class="swatch swatch-roxo" aria-hidden="true"></span><span>Roxo e slate</span></label>
+                <label class="choice theme-choice"><input type="radio" name="tema" value="azul"><span class="swatch swatch-azul" aria-hidden="true"></span><span>Azul e cinza</span></label>
+            </fieldset>
+
+            <p class="form-error" id="setupError" role="alert" hidden></p>
+            <button class="btn" type="submit">Entrar no sistema →</button>
+        </form>
+    </div>
+
+    <div class="modalback hidden" id="intro">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+            <div class="eyebrow">BRIEFING DE INCIDENTE · 60 SEGUNDOS</div>
+            <h2 id="introTitle">Uma intrusão deixou rastros.</h2>
+            <p>Você é analista de segurança da pequena empresa Aurora. O servidor web <b>srv-web01</b> está sob suspeita: houve tentativas de acesso, scripts alterados e atividade incomum no sistema.</p>
+            <p>Investigue um terminal Linux simulado, encontre as dez flags e limpe o servidor. Tudo aqui é fictício: nenhum comando alcança seu computador.</p>
+            <ul>
+                <li>Comece com <b>pwd</b> e <b>ls</b>. Não sabe um comando? Veja o painel <b>Comandos</b> ao lado.</li>
+                <li>As flags aparecem na investigação. Envie cada uma com <b>submit FLAG{...}</b>.</li>
+                <li>Dicas custam 20 XP, cobrados uma vez por etapa.</li>
+                <li>Remoções críticas pedem confirmação; destruir arquivos importantes afeta o site e a sua pontuação.</li>
+            </ul>
+            <button class="btn" id="startBtn">Iniciar investigação →</button>
+            <button class="btn skip" id="skipBtn">Pular briefing</button>
+        </div>
+    </div>
+    <div class="modalback hidden" id="finish">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="finishTitle">
+            <div class="eyebrow">RELATÓRIO DE ENCERRAMENTO</div>
+            <h2 id="finishTitle">Certificado de conclusão</h2>
+            <p id="certificate"></p>
+            <p class="mini" id="learned"></p>
+            <button class="btn" id="closeFinish">Voltar ao terminal</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
