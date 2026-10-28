@@ -21,7 +21,6 @@
             </div>
             <div class="top-actions">
                 <span class="pill" id="stagePill">● EXERCÍCIO 01 / 05</span>
-                <button class="btn" id="soundBtn" aria-pressed="false">♫ Som: off</button>
                 <button class="btn" id="restartBtn">↻ Reiniciar</button>
             </div>
         </header>
@@ -119,25 +118,18 @@
         <form class="modal setup-modal" id="setupForm" role="dialog" aria-modal="true" aria-labelledby="setupTitle" novalidate>
             <div class="eyebrow">CONFIGURAÇÃO DE ACESSO</div>
             <h2 id="setupTitle">Identifique o analista</h2>
-            <p class="mini">Esses dados aparecem no boot e no certificado. Ficam salvos só neste navegador.</p>
+            <p class="mini">Esse nome aparece na tela de boot e no certificado. Fica salvo só neste navegador.</p>
 
             <label class="field">
                 <span>Nome completo</span>
-                <input name="nome" id="fieldNome" maxlength="40" autocomplete="name" placeholder="Ex.: Maria Souza">
+                <input name="nome" maxlength="40" autocomplete="name" placeholder="Ex.: Maria Souza">
             </label>
 
             <fieldset class="field choices">
-                <legend>Gênero</legend>
-                <label class="choice"><input type="radio" name="genero" value="masculino"><span>Masculino</span></label>
-                <label class="choice"><input type="radio" name="genero" value="feminino"><span>Feminino</span></label>
-                <label class="choice"><input type="radio" name="genero" value="neutro" checked><span>Prefiro não informar</span></label>
-            </fieldset>
-
-            <fieldset class="field choices">
                 <legend>Cor do terminal</legend>
-                <label class="choice theme-choice"><input type="radio" name="tema" value="verde" checked><span class="swatch swatch-verde" aria-hidden="true"></span><span>Preto e verde</span></label>
-                <label class="choice theme-choice"><input type="radio" name="tema" value="roxo"><span class="swatch swatch-roxo" aria-hidden="true"></span><span>Roxo e slate</span></label>
-                <label class="choice theme-choice"><input type="radio" name="tema" value="azul"><span class="swatch swatch-azul" aria-hidden="true"></span><span>Azul e cinza</span></label>
+                <label class="choice"><input type="radio" name="tema" value="verde" checked><span class="swatch swatch-verde" aria-hidden="true"></span><span>Preto e verde</span></label>
+                <label class="choice"><input type="radio" name="tema" value="roxo"><span class="swatch swatch-roxo" aria-hidden="true"></span><span>Roxo e slate</span></label>
+                <label class="choice"><input type="radio" name="tema" value="azul"><span class="swatch swatch-azul" aria-hidden="true"></span><span>Azul e cinza</span></label>
             </fieldset>
 
             <p class="form-error" id="setupError" role="alert" hidden></p>

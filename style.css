@@ -153,11 +153,6 @@
             color: var(--green)
         }
 
-        .hint-key {
-            color: #aaffbd;
-            font-weight: 600
-        }
-
         .term-title {
             height: 40px;
             background: #101a14;
@@ -807,28 +802,14 @@
             animation: pop .45s ease-out both
         }
 
-        .cmd-card {
-            transition: border-color .2s ease, background .2s ease, transform .2s ease
-        }
-
         .cmd-card:active,
         .btn:active {
             transform: scale(.97)
         }
 
-        @media(hover:hover) {
-            .cmd-card:hover {
-                transform: translateY(-2px)
-            }
-        }
-
         .choice,
         .field input {
             transition: border-color .2s ease, box-shadow .2s ease, color .2s ease, background .2s ease
-        }
-
-        .swatch {
-            transition: transform .25s ease
         }
 
         .choice:hover .swatch {
@@ -917,6 +898,7 @@
         }
 
         .swatch {
+            transition: transform .25s ease;
             width: 22px;
             height: 22px;
             flex: 0 0 22px;
@@ -1015,7 +997,7 @@
             border-radius: 8px;
             padding: 10px 11px;
             cursor: pointer;
-            transition: border-color .2s, background .2s
+            transition: border-color .2s ease, background .2s ease, transform .2s ease
         }
 
         .cmd-card:focus-visible {
@@ -1042,11 +1024,11 @@
         @media(hover:hover) {
             .cmd-card:hover {
                 border-color: #4b9466;
-                background: #0e1a12
+                background: #0e1a12;
+                transform: translateY(-2px)
             }
         }
 
-        /* No desktop, o painel tem a mesma altura do terminal e rola por dentro. */
         /* No desktop, a coluna lateral tem a mesma altura do terminal: o painel ocupa o espaço que sobrar e rola por dentro. */
         @media(min-width:901px) {
             .terminal-card {

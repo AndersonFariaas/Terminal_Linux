@@ -37,7 +37,7 @@ const RANKS = [
     { name: 'Analista Pleno', xp: 650 },
     { name: 'Caçador de Ameaças', xp: 900 },
 ];
-const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 260, bootEnd: 500 };
+const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 370, bootEnd: 500 };
 const BOOT_TAGS = { ok: '[  OK  ]', warn: '[ WARN ]', info: '[ INFO ]' };
 const BOOT_LINES = [
     ['info', 'srv-web01 · Debian GNU/Linux 12 (bookworm) · kernel 6.1.0-18-amd64'],
@@ -181,7 +181,6 @@ const state = {
     siteUp: true,
     contained: false,
     webshellGone: false,
-    soundOn: false,
     profile: null,
 };
 
@@ -219,7 +218,6 @@ const dom = {
     certificate: $('#certificate'),
     learned: $('#learned'),
     closeFinish: $('#closeFinish'),
-    soundBtn: $('#soundBtn'),
     boot: $('#boot'),
     bootLog: $('#bootLog'),
     tabs: [...document.querySelectorAll('[role="tab"]')],
@@ -1207,25 +1205,6 @@ function render() {
 
 /* ---------- Efeitos de conquista ---------- */
 
-let audioContext = null;
-
-function beep(frequency, duration) {
-    if (!state.soundOn) return;
-    try {
-        audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.frequency.value = frequency;
-        gain.gain.value = 0.06;
-        oscillator.connect(gain).connect(audioContext.destination);
-        oscillator.start();
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-        oscillator.stop(audioContext.currentTime + duration);
-    } catch (error) {
-        console.warn('Som indisponível neste navegador.', error);
-    }
-}
-
 function launchConfetti() {
     if (REDUCED_MOTION) return;
     for (let index = 0; index < CONFETTI_PIECES; index++) {
@@ -1243,20 +1222,17 @@ function celebrate() {
     dom.toast.classList.add('show');
     setTimeout(() => dom.toast.classList.remove('show'), TIMING.toast);
     launchConfetti();
-    beep(880, 0.16);
 }
 
 function announceLevelUp() {
     dom.event.classList.remove('flash');
     void dom.event.offsetWidth;
     dom.event.classList.add('flash');
-    beep(660, 0.13);
 }
 
 function showFinish() {
-    const { nome, genero } = state.profile;
-    const article = GENDER_ARTICLE[genero] ?? GENDER_ARTICLE.neutro;
-    dom.certificate.textContent = `CERTIFICAMOS que ${article} analista ${nome} concluiu a Operação Raiz em ${new Date().toLocaleString('pt-BR')}, capturou ${state.flags.size}/${STAGES.length} flags e encerrou com ${state.score} XP. Servidor srv-web01: LIMPO.`;
+    const { nome } = state.profile;
+    dom.certificate.textContent = `CERTIFICAMOS que ${nome} concluiu a Operação Raiz em ${new Date().toLocaleString('pt-BR')}, capturou ${state.flags.size}/${STAGES.length} flags e encerrou com ${state.score} XP. Servidor srv-web01: LIMPO.`;
     dom.learned.textContent = `Comandos praticados: ${[...state.used].join(', ')}. Pontuação salva neste navegador.`;
     dom.finish.classList.remove('hidden');
     dom.closeFinish.focus();
@@ -1348,8 +1324,7 @@ function startMatrixRain() {
 /* ---------- Cadastro do analista ---------- */
 
 const PROFILE_KEY = 'operacao-raiz-perfil';
-const DEFAULT_PROFILE = { nome: '', genero: 'neutro', tema: 'verde' };
-const GENDER_ARTICLE = { masculino: 'o', feminino: 'a', neutro: 'o(a)' };
+const DEFAULT_PROFILE = { nome: '', tema: 'verde' };
 const THEMES = ['verde', 'roxo', 'azul'];
 
 /* Os dados ficam só neste navegador. Sem acesso ao armazenamento, o cadastro é pedido de novo. */
@@ -1359,7 +1334,6 @@ function readSavedProfile() {
         if (!saved || typeof saved !== 'object') return null;
         return {
             nome: String(saved.nome ?? ''),
-            genero: Object.hasOwn(GENDER_ARTICLE, saved.genero) ? saved.genero : DEFAULT_PROFILE.genero,
             tema: THEMES.includes(saved.tema) ? saved.tema : DEFAULT_PROFILE.tema,
         };
     } catch (error) {
@@ -1385,7 +1359,6 @@ function applyTheme(theme) {
 function fillSetupForm(profile) {
     const { elements } = dom.setupForm;
     elements.nome.value = profile.nome;
-    dom.setupForm.querySelector(`input[name="genero"][value="${profile.genero}"]`).checked = true;
     dom.setupForm.querySelector(`input[name="tema"][value="${profile.tema}"]`).checked = true;
 }
 
@@ -1393,7 +1366,6 @@ function readSetupForm() {
     const data = new FormData(dom.setupForm);
     return {
         nome: String(data.get('nome') ?? '').trim(),
-        genero: data.get('genero') ?? DEFAULT_PROFILE.genero,
         tema: data.get('tema') ?? DEFAULT_PROFILE.tema,
     };
 }
@@ -1529,12 +1501,6 @@ function startSession() {
     dom.input.focus();
 }
 
-function toggleSound() {
-    state.soundOn = !state.soundOn;
-    dom.soundBtn.textContent = `♫ Som: ${state.soundOn ? 'on' : 'off'}`;
-    dom.soundBtn.setAttribute('aria-pressed', String(state.soundOn));
-}
-
 function bindEvents() {
     // "submit" do formulário cobre o Enter do teclado físico e o botão Enviar do celular.
     $('#commandForm').addEventListener('submit', (event) => {
@@ -1554,7 +1520,6 @@ function bindEvents() {
     $('#startBtn').addEventListener('click', startSession);
     $('#skipBtn').addEventListener('click', startSession);
     $('#restartBtn').addEventListener('click', () => location.reload());
-    dom.soundBtn.addEventListener('click', toggleSound);
     dom.closeFinish.addEventListener('click', () => dom.finish.classList.add('hidden'));
     bindTabs();
     dom.setupForm.addEventListener('submit', onSetupSubmit);
@@ -1578,13 +1543,3 @@ function init() {
 }
 
 init();
-
-/*
- * RESPOSTAS DO INSTRUTOR (spoilers)
- * Etapa 1 — cd documentos; cat plantao.txt; enviar FLAG{PRIMEIRO_PASSO}.
- * Etapa 2 — ls -la; cat .rota-segura; enviar FLAG{OLHO_NO_PONTO}.
- * Etapa 3 — sudo apt update; sudo apt install net-tools; enviar FLAG{FERRAMENTA_CERTA}.
- * Etapa 4 — ls -la /tmp; rm -r /tmp/.x7; enviar FLAG{CONTENCAO_FEITA}.
- * Etapa 5 — grep 185.220.101.17 /var/log/access.log /var/log/auth.log; enviar FLAG{185.220.101.17}.
- * Para criar outra etapa, acrescente um objeto em STAGES (name, objective, hint, flag, isComplete).
- */
