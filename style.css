@@ -245,13 +245,14 @@
 
         .inputrow {
             display: flex;
+            flex-wrap: wrap;
             gap: 9px;
             align-items: baseline
         }
 
         .prompt {
             color: var(--term-prompt);
-            white-space: nowrap
+            max-width: 100%
         }
 
         .command-input {

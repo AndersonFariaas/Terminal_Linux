@@ -401,8 +401,8 @@ function displayCwd() {
     return state.cwd.startsWith(`${HOME}/`) ? `~${state.cwd.slice(HOME.length)}` : state.cwd;
 }
 
-/* Primeiro nome do analista cadastrado; antes do cadastro, usa o nome genérico. */
-const userName = () => state.profile?.nome.split(' ')[0] ?? 'analista';
+/* Nome de login: minúsculo e com "_" entre as palavras (ex.: "Maria Souza" → maria_souza). */
+const userName = () => state.profile?.nome.trim().toLowerCase().split(/\s+/).join('_') ?? 'analista';
 const promptText = () => `${userName()}@srv-web01:${displayCwd()}$`;
 
 /* ---------- Saída do terminal ---------- */
@@ -1430,7 +1430,8 @@ function appendBootLine(tag, text) {
 /* Mostra as linhas de inicialização uma a uma. Com movimento reduzido, exibe tudo de uma vez. */
 async function runBoot() {
     dom.boot.classList.remove('hidden');
-    const welcome = ['info', `Bem-vindo, ${userName()}. Sessão de investigação iniciada.`];
+    const firstName = state.profile.nome.split(' ')[0];
+    const welcome = ['info', `Bem-vindo, ${firstName}. Sessão de investigação iniciada.`];
     for (const [tag, text] of [...BOOT_LINES, welcome]) {
         appendBootLine(tag, text);
         if (!REDUCED_MOTION) await wait(TIMING.bootLine);
