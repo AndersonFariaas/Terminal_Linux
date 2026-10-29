@@ -196,6 +196,14 @@ body {
     gap: var(--gap);
 }
 
+/* Coluna do terminal: o monitor fica embaixo, e o terminal ocupa o restante da altura. */
+.main-col {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--gap);
+}
+
 .card {
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -911,6 +919,36 @@ body {
     pointer-events: none;
 }
 
+/* Telas largas: métricas e log lado a lado, para o monitor ocupar pouca altura. */
+@media (min-width: 901px) {
+    .monitor {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        column-gap: 18px;
+        align-items: start;
+    }
+
+    .monitor > .section-head {
+        grid-column: 1 / -1;
+    }
+
+    .metrics {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .monitor-log {
+        grid-column: 2;
+        grid-row: 2 / span 2;
+        margin-top: 0;
+    }
+
+    .monitor-foot {
+        grid-column: 1;
+        grid-row: 3;
+    }
+}
+
 /* ---------- Modais, boot e avisos ---------- */
 
 .modalback {
@@ -1219,6 +1257,11 @@ body {
     .panel-body {
         flex: none;
         overflow: visible;
+    }
+
+    /* Telas estreitas: o terminal precisa da maior parte da altura, então o log ao vivo sai. */
+    .monitor-log {
+        display: none;
     }
 }
 
