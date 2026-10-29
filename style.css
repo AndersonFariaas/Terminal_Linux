@@ -919,34 +919,65 @@ body {
     pointer-events: none;
 }
 
-/* Telas largas: métricas e log lado a lado, para o monitor ocupar pouca altura. */
-@media (min-width: 901px) {
-    .monitor {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-        column-gap: 18px;
-        align-items: start;
-    }
+/*
+ * Monitor como faixa discreta embaixo do terminal: o terminal é o foco.
+ * Mantém os valores e os IPs suspeitos; gráficos e log ao vivo saem.
+ */
+.monitor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 8px 12px;
+}
 
-    .monitor > .section-head {
-        grid-column: 1 / -1;
-    }
+.monitor > .section-head {
+    flex: none;
+    margin: 0;
+}
 
-    .metrics {
-        grid-column: 1;
-        grid-row: 2;
-    }
+.monitor .metrics {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+}
 
-    .monitor-log {
-        grid-column: 2;
-        grid-row: 2 / span 2;
-        margin-top: 0;
-    }
+.monitor .metric {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+}
 
-    .monitor-foot {
-        grid-column: 1;
-        grid-row: 3;
-    }
+.monitor .metric label {
+    display: inline;
+    font-size: var(--fs-xs);
+}
+
+.monitor .metric strong {
+    margin: 0;
+    font-size: var(--fs-md);
+}
+
+.monitor .spark,
+.monitor-log {
+    display: none;
+}
+
+.monitor-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+}
+
+.monitor-foot .eyebrow {
+    display: none;
 }
 
 /* ---------- Modais, boot e avisos ---------- */
@@ -1258,11 +1289,6 @@ body {
         flex: none;
         overflow: visible;
     }
-
-    /* Telas estreitas: o terminal precisa da maior parte da altura, então o log ao vivo sai. */
-    .monitor-log {
-        display: none;
-    }
 }
 
 @media (max-width: 570px) {
@@ -1291,10 +1317,6 @@ body {
 
 /* Telas baixas (notebooks): comprime o monitor para caber sem rolar. */
 @media (min-width: 901px) and (max-height: 720px) {
-    .monitor-log .log {
-        height: 60px;
-    }
-
     .metric strong {
         margin: 3px 0 5px;
     }
