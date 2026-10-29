@@ -819,7 +819,7 @@ function cmdConfirm(args) {
     const { parent, name } = parentOf(target);
     delete parent.children[name];
     state.pendingRemoval = null;
-    state.score = Math.max(0, state.score - CONFIRM_PENALTY);
+    state.score -= CONFIRM_PENALTY;
     print(`Removido: ${target}. −${CONFIRM_PENALTY} XP por destruir dados críticos.`, 'warn');
 }
 
