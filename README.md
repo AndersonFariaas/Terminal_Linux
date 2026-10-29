@@ -1,4 +1,4 @@
-# Operação Raiz — Laboratório Linux
+# Operação Hacker — Laboratório Linux
 
 Simulador de resposta a incidente em um servidor Linux. Você assume o papel de analista de segurança, investiga um terminal simulado, encontra as flags escondidas e limpa o servidor `srv-web01`.
 

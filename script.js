@@ -48,7 +48,7 @@ const BOOT_LINES = [
     ['ok', 'Started A high performance web server (nginx)'],
     ['warn', 'Processo desconhecido detectado em /tmp/.x7'],
     ['ok', 'Started Regular background program processing daemon (cron)'],
-    ['info', 'Carregando laboratório Operação Raiz...'],
+    ['info', 'Carregando laboratório Operação Hacker...'],
 ];
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1645,7 +1645,7 @@ function announceLevelUp() {
 
 function showFinish() {
     const { nome } = state.profile;
-    dom.certificate.textContent = `CERTIFICAMOS que ${nome} concluiu a Operação Raiz em ${new Date().toLocaleString('pt-BR')}, capturou ${state.flags.size}/${STAGES.length} flags e encerrou com ${state.score} XP. Servidor srv-web01: LIMPO.`;
+    dom.certificate.textContent = `CERTIFICAMOS que ${nome} concluiu a Operação Hacker em${new Date().toLocaleString('pt-BR')}, capturou ${state.flags.size}/${STAGES.length} flags e encerrou com ${state.score} XP. Servidor srv-web01: LIMPO.`;
     dom.learned.textContent = `Comandos praticados: ${[...state.used].join(', ')}. Pontuação salva neste navegador.`;
     dom.finish.classList.remove('hidden');
     dom.closeFinish.focus();
