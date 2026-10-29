@@ -1181,7 +1181,7 @@ function revealNextHint() {
     const shown = state.hintsShown.get(state.stage) ?? 0;
     if (!stage || shown >= stage.hints.length) return null;
 
-    if (shown === 0) state.score = Math.max(0, state.score - HINT_COST);
+    if (shown === 0) state.score -= HINT_COST;
     state.hintsShown.set(state.stage, shown + 1);
     return { number: shown + 1, total: stage.hints.length, text: stage.hints[shown], charged: shown === 0 };
 }
