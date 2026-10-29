@@ -39,6 +39,8 @@ const RANKS = [
     { name: 'Caçador de Ameaças', xp: 900 },
 ];
 const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 370, bootEnd: 500 };
+/* Tamanho da grade da chuva, em pixels. */
+const MATRIX = { font: 11, column: 10, row: 12 };
 const BOOT_TAGS = { ok: '[  OK  ]', warn: '[ WARN ]', info: '[ INFO ]' };
 const BOOT_LINES = [
     ['info', 'srv-web01 · Debian GNU/Linux 12 (bookworm) · kernel 6.1.0-18-amd64'],
@@ -1716,20 +1718,31 @@ function addLogLine() {
     while (dom.syslog.children.length > MAX_LOG_LINES) dom.syslog.lastElementChild.remove();
 }
 
+/* Chuva verde no card preto. O canvas acompanha o tamanho do card, então a grade se ajusta ao layout. */
 function startMatrixRain() {
     if (REDUCED_MOTION) return;
-    const ctx = dom.matrix.getContext('2d');
-    const columns = 22;
-    const drops = new Array(columns).fill(0);
+    const canvas = dom.matrix;
+    const ctx = canvas.getContext('2d');
+    let drops = [];
+
+    const fitCanvas = () => {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        const rows = Math.ceil(canvas.height / MATRIX.row);
+        drops = Array.from({ length: Math.ceil(canvas.width / MATRIX.column) }, () => Math.floor(Math.random() * rows));
+    };
+    fitCanvas();
+    window.addEventListener('resize', fitCanvas);
 
     setInterval(() => {
-        ctx.fillStyle = 'rgba(7,12,9,.13)';
-        ctx.fillRect(0, 0, dom.matrix.width, dom.matrix.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, .18)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#5aff82';
-        ctx.font = '11px monospace';
-        drops.forEach((y, index) => {
-            ctx.fillText(String.fromCharCode(0x30a0 + Math.random() * 96), index * 10, y * 10);
-            drops[index] = y * 10 > dom.matrix.height && Math.random() > 0.97 ? 0 : y + 1;
+        ctx.font = `${MATRIX.font}px monospace`;
+        drops.forEach((row, column) => {
+            const y = row * MATRIX.row;
+            ctx.fillText(String.fromCharCode(0x30a0 + Math.random() * 96), column * MATRIX.column, y);
+            drops[column] = y > canvas.height && Math.random() > 0.97 ? 0 : row + 1;
         });
     }, TIMING.matrix);
 }

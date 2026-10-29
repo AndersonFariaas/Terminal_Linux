@@ -809,17 +809,27 @@ body {
     padding: var(--pad) 15px;
 }
 
+/* Esquerda: quatro cards em duas colunas. Direita: log ao vivo e conexões. */
+.monitor-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--gap);
+}
+
 .metrics {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
 }
 
 .metric {
+    position: relative;
+    min-height: 74px;
     padding: 9px;
     border: 1px solid #192b20;
     border-radius: 7px;
     background: #09100b;
+    overflow: hidden;
 }
 
 .metric label {
@@ -830,7 +840,7 @@ body {
 
 .metric strong {
     display: block;
-    margin: 5px 0 7px;
+    margin: 4px 0 4px;
     color: #d9f6df;
     font-size: var(--fs-lg);
 }
@@ -848,12 +858,19 @@ body {
     vector-effect: non-scaling-stroke;
 }
 
-.monitor-log {
-    margin-top: 12px;
+.monitor-side {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.monitor-log .section-head {
+    margin-bottom: 8px;
 }
 
 .log {
-    height: 84px;
+    height: 88px;
     overflow: auto;
     display: grid;
     align-content: start;
@@ -883,7 +900,6 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 12px;
     padding-top: 10px;
     border-top: 1px solid var(--line-soft);
 }
@@ -908,78 +924,40 @@ body {
     color: #ffb486;
 }
 
-/* Chuva de fundo: fica dentro da faixa do monitor, sem vazar para cima. */
+/* Card da chuva: fundo preto e letras verdes, preenchendo o card inteiro. */
+.metric-matrix {
+    padding: 0;
+    border-color: #1d3a26;
+    background: #000;
+}
+
 .matrix {
     position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 0;
-    width: 110px;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    opacity: .09;
-    pointer-events: none;
 }
 
-/*
- * Monitor como faixa discreta embaixo do terminal: o terminal é o foco.
- * Mantém os valores e os IPs suspeitos; gráficos e log ao vivo saem.
- */
-.monitor {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-    padding: 8px 12px;
-    overflow: hidden;
+/* Telas médias e celulares: o log sai e os cards ficam em uma linha, para o terminal continuar sendo o foco. */
+@media (max-width: 900px) {
+    .monitor-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .monitor-side {
+        display: none;
+    }
+
+    .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
-.monitor > .section-head {
-    flex: none;
-    margin: 0;
-}
-
-.monitor .metrics {
-    display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-}
-
-.monitor .metric {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 0;
-    border: 0;
-    background: none;
-}
-
-.monitor .metric label {
-    display: inline;
-    font-size: var(--fs-xs);
-}
-
-.monitor .metric strong {
-    margin: 0;
-    font-size: var(--fs-md);
-}
-
-.monitor .spark,
-.monitor-log {
-    display: none;
-}
-
-.monitor-foot {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    border-top: 0;
-}
-
-.monitor-foot .eyebrow {
-    display: none;
+/* Celulares estreitos: os cards voltam para duas colunas. */
+@media (max-width: 570px) {
+    .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 /* ---------- Modais, boot e avisos ---------- */
