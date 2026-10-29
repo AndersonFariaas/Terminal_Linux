@@ -631,6 +631,126 @@ body {
     animation: pop .45s ease-out both;
 }
 
+/* Dicas e envio de flag dentro do card da etapa atual. */
+.stage-tools {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+}
+
+.hint-list {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 4px;
+    padding: 0;
+    list-style: none;
+}
+
+.hint-list li {
+    padding: 8px 10px;
+    border-left: 2px solid var(--amber);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--panel-strong);
+}
+
+.hint-list b {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--amber);
+    font-size: var(--fs-xs);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.hint-action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.hint-action .mini {
+    flex: 1 1 160px;
+}
+
+.flag-form {
+    display: grid;
+    gap: 8px;
+}
+
+.flag-label {
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.flag-field {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #09100b;
+    font-family: var(--mono);
+    font-size: var(--fs-md);
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.flag-field:focus-within {
+    border-color: #4b9466;
+    box-shadow: 0 0 0 2px #70ff9b20;
+}
+
+.flag-mask {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    color: var(--muted);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.flag-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: var(--term-input);
+    font: inherit;
+    text-transform: uppercase;
+    outline: none;
+}
+
+.flag-input::placeholder {
+    color: #4d6456;
+    text-transform: none;
+}
+
+.flag-submit {
+    width: 100%;
+}
+
+.flag-feedback {
+    min-height: 1.4em;
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+}
+
+.flag-feedback[data-tone="error"] {
+    color: var(--red);
+}
+
+.flag-feedback[data-tone="warn"] {
+    color: var(--amber);
+}
+
 .cmd-grid {
     display: grid;
     gap: 8px;
@@ -1149,7 +1269,8 @@ body {
         min-height: 44px;
     }
 
-    .command-input {
+    .command-input,
+    .flag-input {
         font-size: 16px;
     }
 }

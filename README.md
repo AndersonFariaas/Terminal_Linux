@@ -10,8 +10,8 @@ Simulador de resposta a incidente em um servidor Linux. Você assume o papel de 
 
 1. Informe seu nome e escolha a cor do terminal. O nome aparece no prompt em minúsculo (ex.: `ana_paula@srv-web01:~$`).
 2. Leia o briefing e siga o objetivo atual no painel **Objetivos**, uma etapa por vez.
-3. Investigue com comandos Linux. Ao achar uma flag, envie com `submit FLAG{...}`.
-4. Travou? Use `hint`. Cada dica custa 20 XP, cobrados uma vez por etapa.
+3. Investigue com comandos Linux. Ao achar uma flag, digite-a no campo **Flag desta etapa**, no card da etapa atual.
+4. Travou? Use o botão **Dica** (e depois **Outra dica**) no card. Cada etapa tem até 3 dicas; a primeira custa 20 XP.
 
 São 10 etapas. Cada uma concluída vale 100 XP, e a progressão vai de **Novato** até **Caçador de Ameaças**. Ao final, o servidor fica "LIMPO" e você recebe um certificado.
 

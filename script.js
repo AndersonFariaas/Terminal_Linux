@@ -22,6 +22,7 @@ const UNAME_FULL = 'Linux srv-web01 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC Debian
 const SITE_HTML = '<html><h1>Aurora - portal institucional</h1></html>\n';
 const STAGE_XP = 100;
 const HINT_COST = 20;
+const FLAG_MAX_LENGTH = 40;
 const CONFIRM_PENALTY = 50;
 const MAX_HISTORY = 100;
 const MAX_OUTPUT_LINES = 400;
@@ -177,7 +178,7 @@ const state = {
     stage: 0,
     score: 0,
     flags: new Set(),
-    hintedStages: new Set(),
+    hintsShown: new Map(),
     siteUp: true,
     contained: false,
     webshellGone: false,
@@ -230,12 +231,18 @@ const dom = {
 
 /* ---------- Etapas da missão ---------- */
 
+/* Cada etapa tem até 3 dicas, da mais geral para a mais específica. */
+
 const STAGES = [
     {
         id: 'reconhecimento',
         name: 'Reconhecimento',
         objective: 'Explore sua home e leia o arquivo de plantão em documentos.',
-        hint: 'Use pwd e ls para ver onde você está. Entre em documentos (cd documentos) e leia plantao.txt com cat.',
+        hints: [
+            'Todo incidente começa por contexto: descubra em que pasta você está e o que há nela.',
+            'Há uma pasta chamada documentos na sua home. Dentro dela existe um arquivo de plantão.',
+            'Entre em documentos (cd documentos) e leia plantao.txt com cat.',
+        ],
         lesson: 'Todo incidente começa por contexto. pwd mostra onde você está e ls mostra o que há ali.',
         flag: 'FLAG{PRIMEIRO_PASSO}',
         isComplete: () => state.visited.has(`${HOME}/documentos`) && state.read.has(`${HOME}/documentos/plantao.txt`),
@@ -244,7 +251,11 @@ const STAGES = [
         id: 'arquivos-ocultos',
         name: 'Arquivos ocultos',
         objective: 'Mostre os arquivos ocultos da home e leia .rota-segura.',
-        hint: 'Arquivos com nome iniciado por ponto ficam ocultos no ls. Use ls -la e depois cat .rota-segura.',
+        hints: [
+            'Nem todo arquivo aparece no ls comum. Alguns têm nomes especiais.',
+            'Nomes que começam com ponto ficam escondidos. Procure uma opção do ls que mostra tudo.',
+            'Use ls -la e depois cat .rota-segura.',
+        ],
         lesson: 'No Linux, nomes que começam com ponto ficam ocultos no ls. Atacantes usam isso para esconder arquivos. ls -la mostra tudo.',
         flag: 'FLAG{OLHO_NO_PONTO}',
         isComplete: () => state.listedHidden && state.read.has(`${HOME}/.rota-segura`),
@@ -253,7 +264,11 @@ const STAGES = [
         id: 'ferramentas',
         name: 'Ferramentas de análise',
         objective: 'Atualize o índice APT e instale net-tools.',
-        hint: 'Atualize o índice com sudo apt update e instale com sudo apt install net-tools.',
+        hints: [
+            'Antes de instalar um programa, a lista de pacotes precisa estar atualizada.',
+            'Instalar pacotes exige privilégio de administrador. O nome do pacote é net-tools.',
+            'Rode sudo apt update e depois sudo apt install net-tools.',
+        ],
         lesson: 'apt update atualiza a lista de pacotes e apt install instala. Ferramentas de rede ajudam a investigar conexões suspeitas.',
         flag: 'FLAG{FERRAMENTA_CERTA}',
         isComplete: () => state.packages.has('net-tools'),
@@ -262,7 +277,11 @@ const STAGES = [
         id: 'tentativas-login',
         name: 'Tentativas de login',
         objective: 'Conte quantas senhas foram recusadas no log de autenticação.',
-        hint: 'Leia /var/log/auth.log com grep Failed. Cada linha que aparece é uma tentativa recusada: conte as linhas.',
+        hints: [
+            'O log de autenticação registra cada tentativa de login, inclusive as que falham.',
+            'Procure no /var/log/auth.log só as linhas de senha recusada e conte quantas são.',
+            'Use grep -c Failed /var/log/auth.log para ver a quantidade direto.',
+        ],
         lesson: 'auth.log registra cada tentativa de login. Muitas falhas seguidas vindas do mesmo endereço indicam força bruta.',
         flag: 'FLAG{6_TENTATIVAS}',
         isComplete: () => state.read.has('/var/log/auth.log'),
@@ -271,7 +290,11 @@ const STAGES = [
         id: 'contas',
         name: 'Contas suspeitas',
         objective: 'Confira as contas do sistema e o checklist de auditoria.',
-        hint: 'Só o root deve ter UID 0 (o terceiro campo de /etc/passwd). Use grep ":0:" /etc/passwd e leia checklist-contas.txt em documentos.',
+        hints: [
+            'Pense no que significa UID 0 no Linux: quem tem esse número tem poder de administrador.',
+            'Compare as contas de /etc/passwd com o checklist de auditoria em documentos.',
+            'Só o root deve ter UID 0 (o terceiro campo de /etc/passwd). Use grep ":0:" /etc/passwd e leia checklist-contas.txt em documentos.',
+        ],
         lesson: 'Somente o root deve ter UID 0. Uma segunda conta com UID 0 dá acesso de administrador e funciona como porta dos fundos.',
         flag: 'FLAG{CONTA_OCULTA}',
         isComplete: () => state.read.has(PASSWD_FILE) && state.read.has(CHECKLIST_FILE),
@@ -280,7 +303,11 @@ const STAGES = [
         id: 'permissoes',
         name: 'Permissões',
         objective: 'Leia o upload.php e tire a permissão de escrita dos outros usuários.',
-        hint: 'ls -l /var/www mostra as permissões. Em -rwxrwxrwx, os três últimos caracteres valem para outros usuários: use chmod o-w /var/www/upload.php.',
+        hints: [
+            'Veja quem pode alterar o arquivo. A permissão de escrita para outros usuários é o ponto de atenção.',
+            'Use ls -l em /var/www para ver as permissões e leia o upload.php com cat.',
+            'Remova a escrita para outros usuários com chmod o-w /var/www/upload.php.',
+        ],
         lesson: 'Permissão de escrita para outros usuários permite alterar o arquivo. chmod o-w remove essa permissão sem mudar o dono.',
         flag: 'FLAG{PERMISSAO_FECHADA}',
         isComplete: () => state.read.has(UPLOAD_FILE) && !othersCanWrite(UPLOAD_FILE),
@@ -289,7 +316,11 @@ const STAGES = [
         id: 'webshell',
         name: 'Porta dos fundos',
         objective: 'Encontre o arquivo oculto que o atacante deixou no site e leia o conteúdo.',
-        hint: 'O access.log mostra GET /assets/.cache. Use find /var/www -name ".cache" e depois cat no arquivo encontrado.',
+        hints: [
+            'O access.log mostra acessos estranhos ao site. Veja qual caminho chamou sua atenção.',
+            'O arquivo escondido fica dentro de /var/www e o nome começa com ponto. Procure por ele com find.',
+            'Use find /var/www -name ".cache" e depois cat no arquivo encontrado.',
+        ],
         lesson: 'Webshell é um script que executa comandos enviados pela web. Atacantes escondem esses arquivos com nomes que começam com ponto.',
         flag: 'FLAG{WEBSHELL_ENCONTRADA}',
         isComplete: () => state.read.has(WEBSHELL_FILE),
@@ -298,7 +329,11 @@ const STAGES = [
         id: 'contencao',
         name: 'Contenção',
         objective: 'Encontre a pasta persistente em /tmp e remova-a do servidor.',
-        hint: 'O syslog aponta /tmp/.x7/keepalive. Use ls -la /tmp para achar a pasta oculta e rm -r /tmp/.x7. Matar só o processo não basta: o cron o reinicia.',
+        hints: [
+            'O syslog aponta uma atividade suspeita em /tmp. Verifique o que está escondido lá.',
+            'Liste /tmp com ls -la para mostrar as pastas ocultas. Matar o processo não basta: o cron o reinicia.',
+            'Remova a pasta persistente com rm -r /tmp/.x7.',
+        ],
         lesson: 'Matar o processo não basta se o programa continua no disco, porque o cron o reinicia. Contenção é remover a persistência.',
         flag: 'FLAG{CONTENCAO_FEITA}',
         isComplete: () => isContained(),
@@ -307,7 +342,11 @@ const STAGES = [
         id: 'limpeza',
         name: 'Limpeza do site',
         objective: 'Remova o webshell do site para que o atacante perca a porta de entrada.',
-        hint: 'Apague o arquivo com rm /var/www/assets/.cache. Confira antes com ls -la /var/www/assets.',
+        hints: [
+            'O webshell ainda está no site. Lembre onde você o encontrou.',
+            'Confira a pasta assets com ls -la /var/www/assets antes de apagar.',
+            'Apague o arquivo com rm /var/www/assets/.cache.',
+        ],
         lesson: 'Remover o webshell fecha a porta de entrada, mas também é preciso corrigir a falha que permitiu o upload.',
         flag: 'FLAG{SITE_LIMPO}',
         isComplete: () => !lookup(WEBSHELL_FILE),
@@ -316,7 +355,11 @@ const STAGES = [
         id: 'atribuicao',
         name: 'Atribuição',
         objective: 'Correlacione o IP atacante nos logs e envie a flag final.',
-        hint: 'Procure o IP nos dois logs: grep 185.220.101.17 /var/log/access.log /var/log/auth.log.',
+        hints: [
+            'O painel Monitor mostra os IPs observados. Qual deles é o suspeito?',
+            'Procure esse IP nos dois logs de uma vez. A ameaça também precisa estar contida.',
+            'Use grep 185.220.101.17 /var/log/access.log /var/log/auth.log.',
+        ],
         lesson: 'Um mesmo IP em vários logs liga os eventos entre si. Cruzar fontes diferentes é o que transforma sinais em conclusão.',
         flag: `FLAG{${ATTACKER_IP}}`,
         isComplete: () => ATTACKER_LOGS.every((path) => state.attackerLogs.has(path)) && isContained(),
@@ -356,7 +399,7 @@ const MANUAL = {
     top: 'top - mostra um retrato dos processos e da carga do sistema.',
     kill: 'kill - envia sinal de encerramento a um processo.\nCuidado: se o binário ainda existir, o cron reinicia o processo.',
     confirmar: 'confirmar - confirma a remoção de um caminho crítico. Ex.: confirmar /var/www',
-    hint: `hint - revela a pista da etapa atual. Custa ${HINT_COST} XP, cobrados uma vez por etapa.`,
+    hint: `hint - revela a próxima dica da etapa atual (até 3 por etapa). A primeira custa ${HINT_COST} XP.`,
     submit: 'submit - envia uma flag encontrada na investigação. Ex.: submit FLAG{...}',
 };
 
@@ -379,8 +422,7 @@ const COMMAND_GUIDE = [
     { command: 'man', description: 'Explica um comando. Use man seguido do nome do comando.', example: 'man ls' },
     { command: '|', description: 'Envia a saída de um comando para o próximo. Um comando alimenta o outro.', example: 'ls -la | sort' },
     { command: '>', description: 'Salva a saída em um arquivo. Use >> para acrescentar no fim.', example: 'echo teste > nota.txt' },
-    { command: 'hint', description: `Mostra a pista da etapa atual. Custa ${HINT_COST} XP, uma vez por etapa.`, example: 'hint' },
-    { command: 'submit', description: 'Envia a flag que você encontrou na investigação.', example: 'submit FLAG{...}' },
+    { command: 'hint', description: `Mostra a próxima dica da etapa atual (até 3). A primeira custa ${HINT_COST} XP.`, example: 'hint' },
 ];
 
 /* ---------- Utilidades de caminho ---------- */
@@ -1133,36 +1175,56 @@ function currentStage() {
     return STAGES[state.stage] ?? null;
 }
 
-function cmdHint() {
+/* Libera a próxima dica da etapa atual. Só a primeira dica de cada etapa custa XP. */
+function revealNextHint() {
     const stage = currentStage();
-    if (!stage) return print('Nenhuma dica pendente.');
-    if (state.hintedStages.has(state.stage)) return print(`DICA: ${stage.hint}`, 'warn');
+    const shown = state.hintsShown.get(state.stage) ?? 0;
+    if (!stage || shown >= stage.hints.length) return null;
 
-    state.hintedStages.add(state.stage);
-    state.score = Math.max(0, state.score - HINT_COST);
-    print(`DICA (−${HINT_COST} XP, cobrado uma vez nesta etapa): ${stage.hint}`, 'warn');
+    if (shown === 0) state.score = Math.max(0, state.score - HINT_COST);
+    state.hintsShown.set(state.stage, shown + 1);
+    return { number: shown + 1, total: stage.hints.length, text: stage.hints[shown], charged: shown === 0 };
 }
 
-function cmdSubmit(args) {
-    const stage = currentStage();
-    if (!stage) return print('Todas as flags foram capturadas. Missão concluída!', 'good');
+function cmdHint() {
+    if (!currentStage()) return print('Nenhuma dica pendente.');
+    const hint = revealNextHint();
+    if (!hint) return print('Você já viu todas as dicas desta etapa. Veja o card da etapa atual.', 'warn');
 
-    const [flag] = args;
-    if (state.flags.has(flag)) return print('Essa flag já foi capturada. Veja o objetivo da etapa atual.', 'warn');
-    if (flag !== stage.flag) return fail('Flag incorreta. Continue investigando.');
-    if (!stage.isComplete()) return fail('Flag correta, mas esta etapa ainda não foi concluída. Releia o objetivo.');
+    const cost = hint.charged ? ` (−${HINT_COST} XP, cobrado uma vez nesta etapa)` : '';
+    print(`DICA ${hint.number} de ${hint.total}${cost}: ${hint.text}`, 'warn');
+}
+
+/*
+ * Valida a flag da etapa atual. Devolve o resultado para quem enviou (terminal ou card).
+ * Só um acerto altera o progresso.
+ */
+function submitFlag(flag) {
+    const stage = currentStage();
+    if (!stage) return { ok: false, tone: 'good', message: 'Todas as flags foram capturadas. Missão concluída!' };
+    if (state.flags.has(flag)) return { ok: false, tone: 'warn', message: 'Essa flag já foi capturada. Veja o objetivo da etapa atual.' };
+    if (flag !== stage.flag) return { ok: false, tone: 'error', message: 'Flag incorreta. Continue investigando.' };
+    if (!stage.isComplete()) return { ok: false, tone: 'error', message: 'Flag correta, mas esta etapa ainda não foi concluída. Releia o objetivo.' };
 
     const previousRank = rankIndex(state.score);
     state.flags.add(flag);
     state.score += STAGE_XP;
     state.stage += 1;
+    flagDraft = '';
     print(`Flag validada: ${flag}`, 'good');
     print(`Lição: ${stage.lesson}`, 'lesson');
     celebrate();
     if (rankIndex(state.score) > previousRank) announceLevelUp();
 
     if (state.stage === STAGES.length) setTimeout(showFinish, TIMING.finish);
-    else print(`Próxima etapa: ${STAGES[state.stage].name}. Use hint se precisar de ajuda.`);
+    else print(`Próxima etapa: ${STAGES[state.stage].name}. Use a dica do card se precisar de ajuda.`);
+    return { ok: true };
+}
+
+function cmdSubmit(args) {
+    const result = submitFlag(args[0]);
+    if (result.tone === 'error') fail(result.message);
+    else if (!result.ok) print(result.message, result.tone);
 }
 
 const COMMANDS = {
@@ -1381,25 +1443,157 @@ function renderStatus() {
     dom.serverStatus.textContent = text;
 }
 
+/* Texto digitado no campo de flag. Fica guardado para sobreviver aos re-renderizações do painel. */
+let flagDraft = '';
+
 function renderObjectives() {
     dom.objectives.replaceChildren(...STAGES.map((stage, index) => {
         const done = index < state.stage;
+        const current = index === state.stage;
         const row = document.createElement('div');
-        row.className = `objective${done ? ' done' : ''}${index === state.stage ? ' current' : ''}`;
+        row.className = `objective${done ? ' done' : ''}${current ? ' current' : ''}`;
 
         const check = document.createElement('span');
         check.className = 'check';
         check.textContent = done ? '✓' : '';
 
-        const text = document.createElement('span');
+        const text = document.createElement('div');
         const title = document.createElement('b');
         title.textContent = `Nível ${index + 1} · ${stage.name}`;
         text.append(title, document.createElement('br'), stage.objective);
+        if (current) text.append(buildStageTools(stage));
 
         row.append(check, text);
         return row;
     }));
     dom.objectiveCount.textContent = `${state.stage}/${STAGES.length}`;
+}
+
+/* Dicas e campo de flag aparecem só no card da etapa atual, para não revelar as próximas. */
+function buildStageTools(stage) {
+    const tools = document.createElement('div');
+    tools.className = 'stage-tools';
+    tools.append(buildHints(stage), buildFlagForm());
+    return tools;
+}
+
+function buildHints(stage) {
+    const shown = state.hintsShown.get(state.stage) ?? 0;
+    const hints = document.createElement('div');
+
+    if (shown > 0) {
+        const list = document.createElement('ol');
+        list.className = 'hint-list';
+        stage.hints.slice(0, shown).forEach((text, index) => {
+            const item = document.createElement('li');
+            item.tabIndex = -1;
+            const label = document.createElement('b');
+            label.textContent = `Dica ${index + 1} de ${stage.hints.length}`;
+            item.append(label, text);
+            list.append(item);
+        });
+        hints.append(list);
+    }
+    hints.append(buildHintAction(stage, shown));
+    return hints;
+}
+
+function buildHintAction(stage, shown) {
+    const action = document.createElement('div');
+    action.className = 'hint-action';
+    const note = document.createElement('p');
+    note.className = 'mini';
+
+    if (shown === stage.hints.length) {
+        note.textContent = 'Você já viu todas as dicas desta etapa.';
+        action.append(note);
+        return action;
+    }
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn';
+    button.textContent = shown === 0 ? 'Dica' : 'Outra dica';
+    button.addEventListener('click', onHintClick);
+
+    const left = stage.hints.length - shown;
+    note.textContent = shown === 0 ? `A primeira dica custa ${HINT_COST} XP.` : left === 1 ? 'Resta 1 dica.' : `Restam ${left} dicas.`;
+    action.append(button, note);
+    return action;
+}
+
+function onHintClick() {
+    revealNextHint();
+    render();
+    // O botão some ao chegar na última dica: o foco vai para a dica nova, sem perder a posição.
+    dom.objectives.querySelector('.hint-list li:last-child')?.focus();
+}
+
+function buildFlagForm() {
+    const form = document.createElement('form');
+    form.className = 'flag-form';
+
+    const label = document.createElement('label');
+    label.className = 'flag-label';
+    label.htmlFor = 'flagInput';
+    label.textContent = 'Flag desta etapa';
+
+    const input = document.createElement('input');
+    input.id = 'flagInput';
+    input.className = 'flag-input';
+    input.name = 'flag';
+    input.type = 'text';
+    input.maxLength = FLAG_MAX_LENGTH;
+    input.autocomplete = 'off';
+    input.autocapitalize = 'characters';
+    input.spellcheck = false;
+    input.placeholder = 'digite aqui';
+    input.value = flagDraft;
+    input.addEventListener('input', () => {
+        flagDraft = input.value;
+    });
+
+    const field = document.createElement('div');
+    field.className = 'flag-field';
+    field.append(maskPart('FLAG{'), input, maskPart('}'));
+
+    const submit = document.createElement('button');
+    submit.type = 'submit';
+    submit.className = 'btn flag-submit';
+    submit.textContent = 'Validar flag';
+
+    const feedback = document.createElement('p');
+    feedback.className = 'flag-feedback';
+    feedback.setAttribute('role', 'status');
+
+    form.append(label, field, submit, feedback);
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const result = submitFlag(normalizeFlag(input.value));
+        if (result.ok) {
+            render();
+            return;
+        }
+        feedback.dataset.tone = result.tone;
+        feedback.textContent = result.message;
+        input.focus();
+    });
+    return form;
+}
+
+/* Parte fixa da máscara (FLAG{ e }). Fica fora da leitura de tela, que já lê o rótulo. */
+function maskPart(text) {
+    const part = document.createElement('span');
+    part.className = 'flag-mask';
+    part.setAttribute('aria-hidden', 'true');
+    part.textContent = text;
+    return part;
+}
+
+/* Aceita a flag inteira (FLAG{...}) ou só o que está entre as chaves. */
+function normalizeFlag(value) {
+    const body = value.trim().replace(/^FLAG\{/i, '').replace(/\}$/, '');
+    return `FLAG{${body.toUpperCase()}}`;
 }
 
 function saveRecord() {
