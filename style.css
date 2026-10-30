@@ -107,6 +107,13 @@ body {
     margin: 0;
 }
 
+/* Respiro no fim da página. Margem do último card não entra na rolagem, por isso é um bloco real. */
+body::after {
+    content: "";
+    display: block;
+    height: 16px;
+}
+
 body {
     height: 100vh;
     height: 100dvh;
@@ -833,7 +840,7 @@ body {
     position: relative;
     flex: none;
     max-width: 1600px;
-    margin: calc(var(--gap) + 16px) auto 16px;
+    margin: 16px auto 0;
     padding: var(--pad);
 }
 
