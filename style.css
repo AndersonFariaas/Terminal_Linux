@@ -806,7 +806,7 @@ body {
 .monitor {
     position: relative;
     flex: none;
-    padding: var(--pad) 15px;
+    padding: var(--pad);
 }
 
 /* Esquerda: quatro cards em duas colunas. Direita: log ao vivo e conexões. */
@@ -858,19 +858,27 @@ body {
     vector-effect: non-scaling-stroke;
 }
 
+/* Coluna da direita: o log ocupa o espaço que sobra, e as conexões ficam alinhadas à base dos cards. */
 .monitor-side {
     display: grid;
-    align-content: start;
-    gap: 10px;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
     min-width: 0;
+}
+
+.monitor-log {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
 }
 
 .monitor-log .section-head {
     margin-bottom: 8px;
 }
 
+/* Altura fixa: o log não pode empurrar os cards ao crescer com as linhas novas. */
 .log {
-    height: 88px;
+    height: 90px;
     overflow: auto;
     display: grid;
     align-content: start;
@@ -895,12 +903,13 @@ body {
 }
 
 .monitor-foot {
+    align-self: end;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding-top: 10px;
+    padding-top: 8px;
     border-top: 1px solid var(--line-soft);
 }
 
@@ -1012,11 +1021,6 @@ body {
 
 .modal .btn {
     margin-top: 8px;
-}
-
-.skip {
-    margin-left: 8px;
-    background: transparent;
 }
 
 .setup-modal {

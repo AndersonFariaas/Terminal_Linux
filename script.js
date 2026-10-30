@@ -39,8 +39,8 @@ const RANKS = [
     { name: 'Caçador de Ameaças', xp: 900 },
 ];
 const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 370, bootEnd: 500 };
-/* Tamanho da grade da chuva, em pixels. */
-const MATRIX = { font: 11, column: 10, row: 12 };
+/* Grade da chuva (em pixels) e os caracteres que caem. */
+const MATRIX = { font: 11, column: 10, row: 12, chars: '0123456789ABCDEF' };
 const BOOT_TAGS = { ok: '[  OK  ]', warn: '[ WARN ]', info: '[ INFO ]' };
 const BOOT_LINES = [
     ['info', 'srv-web01 · Debian GNU/Linux 12 (bookworm) · kernel 6.1.0-18-amd64'],
@@ -1741,7 +1741,7 @@ function startMatrixRain() {
         ctx.font = `${MATRIX.font}px monospace`;
         drops.forEach((row, column) => {
             const y = row * MATRIX.row;
-            ctx.fillText(String.fromCharCode(0x30a0 + Math.random() * 96), column * MATRIX.column, y);
+            ctx.fillText(MATRIX.chars[Math.floor(Math.random() * MATRIX.chars.length)], column * MATRIX.column, y);
             drops[column] = y > canvas.height && Math.random() > 0.97 ? 0 : row + 1;
         });
     }, TIMING.matrix);
@@ -1929,6 +1929,20 @@ function startSession() {
     dom.input.focus();
 }
 
+/*
+ * Cancela a missão: apaga o cadastro deste navegador e recarrega a página,
+ * que volta ao cadastro. O recorde salvo é mantido.
+ */
+function cancelMission() {
+    if (!window.confirm('Cancelar a missão? O progresso desta sessão será perdido e você vai informar o nome de novo.')) return;
+    try {
+        localStorage.removeItem(PROFILE_KEY);
+    } catch (error) {
+        console.warn('Não foi possível apagar o cadastro salvo neste navegador.', error);
+    }
+    location.reload();
+}
+
 /* Em celulares, o painel de missão abre como uma folha sobre o terminal. */
 function setPanelOpen(open) {
     document.body.classList.toggle('panel-open', open);
@@ -1952,8 +1966,7 @@ function bindEvents() {
         });
     });
     $('#startBtn').addEventListener('click', startSession);
-    $('#skipBtn').addEventListener('click', startSession);
-    $('#restartBtn').addEventListener('click', () => location.reload());
+    $('#cancelBtn').addEventListener('click', cancelMission);
     dom.panelBtn.addEventListener('click', () => setPanelOpen(!document.body.classList.contains('panel-open')));
     dom.closeFinish.addEventListener('click', () => dom.finish.classList.add('hidden'));
     bindTabs();
