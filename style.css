@@ -913,7 +913,7 @@ body {
 
 /* Altura fixa: o log não pode empurrar os cards ao crescer com as linhas novas. */
 .log {
-    height: 90px;
+    height: 102px;
     overflow: auto;
     display: grid;
     align-content: start;
