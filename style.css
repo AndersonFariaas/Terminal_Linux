@@ -1289,7 +1289,8 @@ body {
     }
 
     /* Em telas estreitas, a legenda do cabeçalho some para o título caber em uma ou duas linhas. */
-    .brand small {
+    .brand small,
+    .brand-lab {
         display: none;
     }
 
