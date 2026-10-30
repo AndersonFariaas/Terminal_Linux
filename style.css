@@ -57,7 +57,7 @@
     --glow: #4f9dff;
 }
 
-/* ---------- Base: tela cheia, sem barra de rolagem da página ---------- */
+/* ---------- Base: a primeira tela é o terminal; o monitor fica abaixo e aparece ao rolar ---------- */
 
 * {
     box-sizing: border-box;
@@ -68,11 +68,31 @@
     display: none;
 }
 
-html,
-body {
+/* Barra invisível. Ela aparece só enquanto a área está sendo rolada (ver bindScrollbarReveal). */
+.is-scrolling {
+    scrollbar-width: thin;
+    scrollbar-color: #3b6b4d transparent;
+}
+
+.is-scrolling::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+    height: 8px;
+}
+
+.is-scrolling::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background: #3b6b4d;
+}
+
+html {
     height: 100%;
     margin: 0;
-    overflow: hidden;
+    overflow-y: auto;
+}
+
+body {
+    margin: 0;
 }
 
 body {
@@ -196,13 +216,6 @@ body {
     gap: var(--gap);
 }
 
-/* Coluna do terminal: o monitor fica embaixo, e o terminal ocupa o restante da altura. */
-.main-col {
-    min-height: 0;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: var(--gap);
-}
 
 .card {
     border: 1px solid var(--line);
@@ -803,9 +816,12 @@ body {
 
 /* ---------- Monitor ---------- */
 
+/* Fica depois da área principal, na mesma largura dela. */
 .monitor {
     position: relative;
     flex: none;
+    max-width: 1600px;
+    margin: calc(var(--gap) + 16px) auto 16px;
     padding: var(--pad);
 }
 

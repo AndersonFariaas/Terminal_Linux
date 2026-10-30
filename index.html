@@ -27,59 +27,28 @@
         </header>
 
         <main class="layout">
-            <div class="main-col">
-                <section class="card terminal-card" aria-label="Terminal Linux simulado">
-                    <div class="term-title">
-                        <div class="dots" aria-hidden="true"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
-                        <div class="caption" id="caption">analista@srv-web01: ~</div>
-                        <span class="spacer" aria-hidden="true"></span>
-                    </div>
-                    <div class="terminal" id="terminal" role="log" aria-live="polite" aria-label="Saída do terminal">
-                        <div id="output"></div>
-                        <form class="inputrow" id="commandForm" autocomplete="off">
-                            <span class="prompt" id="prompt">analista@srv-web01:~$</span>
-                            <input class="command-input" id="command" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="Comando do terminal">
-                        </form>
-                    </div>
-                    <div class="event" id="event">*** LEVEL UP! ***</div>
-                    <div class="quickkeys" aria-label="Teclas rápidas">
-                        <button type="button" class="btn" data-key="Tab">Tab</button>
-                        <button type="button" class="btn" data-key="ArrowUp" aria-label="Comando anterior">↑</button>
-                        <button type="button" class="btn" data-key="ArrowDown" aria-label="Próximo comando">↓</button>
-                        <button type="button" class="btn" data-key="Clear">Limpar</button>
-                    </div>
-                    <div class="status-row"><span>SIMULAÇÃO LOCAL · nenhum comando é executado no sistema real</span><span id="clock">--:--:--</span></div>
-                </section>
-
-                <section class="card monitor" aria-label="Monitor do sistema">
-                    <div class="section-head"><span>Monitor do sistema</span></div>
-                    <div class="monitor-body">
-                        <div class="metrics">
-                            <div class="metric"><label>CPU</label><strong id="cpuValue">78%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                                    <polyline id="cpuLine" points="0,16 15,10 28,15 42,5 56,13 70,8 84,12 100,3" />
-                                </svg></div>
-                            <div class="metric"><label>MEMÓRIA</label><strong id="ramValue">62%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                                    <polyline id="ramLine" points="0,14 15,12 28,9 42,11 56,7 70,10 84,5 100,8" />
-                                </svg></div>
-                            <div class="metric"><label>REDE</label><strong id="netValue">4.2 Mb</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
-                                    <polyline id="netLine" points="0,18 15,13 28,17 42,4 56,10 70,5 84,15 100,7" />
-                                </svg></div>
-                            <div class="metric metric-matrix" aria-hidden="true"><canvas class="matrix" id="matrix"></canvas></div>
-                        </div>
-
-                        <div class="monitor-side">
-                            <div class="monitor-log">
-                                <div class="section-head"><span>Log ao vivo</span><span class="eyebrow">SYSLOG</span></div>
-                                <div class="log" id="syslog"></div>
-                            </div>
-                            <div class="monitor-foot">
-                                <span class="eyebrow">CONEXÕES OBSERVADAS · 12 tentativas</span>
-                                <div class="ips"><span class="ip hot">185.220.101.17 · suspeito</span><span class="ip">10.0.0.1 · gateway</span><span class="ip">10.0.0.24 · web01</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+            <section class="card terminal-card" aria-label="Terminal Linux simulado">
+                <div class="term-title">
+                    <div class="dots" aria-hidden="true"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+                    <div class="caption" id="caption">analista@srv-web01: ~</div>
+                    <span class="spacer" aria-hidden="true"></span>
+                </div>
+                <div class="terminal" id="terminal" role="log" aria-live="polite" aria-label="Saída do terminal">
+                    <div id="output"></div>
+                    <form class="inputrow" id="commandForm" autocomplete="off">
+                        <span class="prompt" id="prompt">analista@srv-web01:~$</span>
+                        <input class="command-input" id="command" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="Comando do terminal">
+                    </form>
+                </div>
+                <div class="event" id="event">*** LEVEL UP! ***</div>
+                <div class="quickkeys" aria-label="Teclas rápidas">
+                    <button type="button" class="btn" data-key="Tab">Tab</button>
+                    <button type="button" class="btn" data-key="ArrowUp" aria-label="Comando anterior">↑</button>
+                    <button type="button" class="btn" data-key="ArrowDown" aria-label="Próximo comando">↓</button>
+                    <button type="button" class="btn" data-key="Clear">Limpar</button>
+                </div>
+                <div class="status-row"><span>SIMULAÇÃO LOCAL · nenhum comando é executado no sistema real</span><span id="clock">--:--:--</span></div>
+            </section>
 
             <aside class="side" id="side">
                 <section class="card section">
@@ -112,6 +81,36 @@
             </aside>
         </main>
     </div>
+
+    <section class="card monitor" aria-label="Monitor do sistema">
+        <div class="section-head"><span>Monitor do sistema</span></div>
+        <div class="monitor-body">
+            <div class="metrics">
+                <div class="metric"><label>CPU</label><strong id="cpuValue">78%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                        <polyline id="cpuLine" points="0,16 15,10 28,15 42,5 56,13 70,8 84,12 100,3" />
+                    </svg></div>
+                <div class="metric"><label>MEMÓRIA</label><strong id="ramValue">62%</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                        <polyline id="ramLine" points="0,14 15,12 28,9 42,11 56,7 70,10 84,5 100,8" />
+                    </svg></div>
+                <div class="metric"><label>REDE</label><strong id="netValue">4.2 Mb</strong><svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+                        <polyline id="netLine" points="0,18 15,13 28,17 42,4 56,10 70,5 84,15 100,7" />
+                    </svg></div>
+                <div class="metric metric-matrix" aria-hidden="true"><canvas class="matrix" id="matrix"></canvas></div>
+            </div>
+
+            <div class="monitor-side">
+                <div class="monitor-log">
+                    <div class="section-head"><span>Log ao vivo</span><span class="eyebrow">SYSLOG</span></div>
+                    <div class="log" id="syslog"></div>
+                </div>
+                <div class="monitor-foot">
+                    <span class="eyebrow">CONEXÕES OBSERVADAS · 12 tentativas</span>
+                    <div class="ips"><span class="ip hot">185.220.101.17 · suspeito</span><span class="ip">10.0.0.1 · gateway</span><span class="ip">10.0.0.24 · web01</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="toast" id="toast" role="status">FLAG CAPTURADA</div>
     <div class="confetti" id="confetti" aria-hidden="true"></div>
 

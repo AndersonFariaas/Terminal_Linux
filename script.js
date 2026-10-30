@@ -38,7 +38,7 @@ const RANKS = [
     { name: 'Analista Pleno', xp: 650 },
     { name: 'Caçador de Ameaças', xp: 900 },
 ];
-const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 370, bootEnd: 500 };
+const TIMING = { clock: 1000, metrics: 1800, log: 4000, install: 110, respawn: 5000, toast: 1600, confetti: 2200, finish: 800, matrix: 70, bootLine: 370, bootEnd: 500, scrollbar: 900 };
 /* Grade da chuva (em pixels) e os caracteres que caem. */
 const MATRIX = { font: 11, column: 10, row: 12, chars: '0123456789ABCDEF' };
 const BOOT_TAGS = { ok: '[  OK  ]', warn: '[ WARN ]', info: '[ INFO ]' };
@@ -1943,6 +1943,20 @@ function cancelMission() {
     location.reload();
 }
 
+/*
+ * Mostra a barra de rolagem só enquanto a área está sendo rolada. Vale para a página
+ * e para as áreas internas: cada uma guarda o próprio temporizador.
+ */
+function bindScrollbarReveal() {
+    const timers = new WeakMap();
+    document.addEventListener('scroll', (event) => {
+        const area = event.target === document ? document.documentElement : event.target;
+        area.classList.add('is-scrolling');
+        clearTimeout(timers.get(area));
+        timers.set(area, setTimeout(() => area.classList.remove('is-scrolling'), TIMING.scrollbar));
+    }, { capture: true, passive: true });
+}
+
 /* Em celulares, o painel de missão abre como uma folha sobre o terminal. */
 function setPanelOpen(open) {
     document.body.classList.toggle('panel-open', open);
@@ -1978,6 +1992,7 @@ function bindEvents() {
 
 function init() {
     bindEvents();
+    bindScrollbarReveal();
     renderCommandGuide();
     render();
     updateClock();
